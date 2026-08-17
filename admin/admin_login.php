@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once 'config/db_connection.php';
+require_once '../config/db_connection.php';
 
 // Simple admin credentials (you can hardcode for now or create admin table)
 $admin_username = 'admin';
@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html>
 <head>
     <title>Admin Login</title>
-    <link rel="stylesheet" href="assets/css/admin_style.css">
+    <link rel="stylesheet" href="../assets/css/admin_style.css">
 </head>
 <body>
     <div class="login-container">
