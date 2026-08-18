@@ -1,28 +1,41 @@
 <?php
 
-require 'config/db_connection.php';
-require_login();
+session_start();
 
+require_once('../config/db_connection.php');
+require_once('../config/auth.php');
+
+require_login();
 
 // ==================================================
 // READ - GET CURRENT USER INFORMATION
 // ==================================================
 
-$statement = $pdo->prepare(
-    'SELECT
+$userQuery = mysqli_prepare(
+    $conn,
+    "SELECT
         full_name,
         address,
         phone
      FROM users
-     WHERE user_id = ?'
+     WHERE user_id = ?"
 );
 
-$statement->execute([
+// Bind logged-in user's ID.
+mysqli_stmt_bind_param(
+    $userQuery,
+    "i",
     $_SESSION['user_id']
-]);
+);
 
-$user = $statement->fetch();
+// Execute query.
+mysqli_stmt_execute($userQuery);
 
+// Get result.
+$result = mysqli_stmt_get_result($userQuery);
+
+// Get current user information.
+$user = mysqli_fetch_assoc($result);
 
 // ==================================================
 // UPDATE PROFILE
@@ -30,55 +43,67 @@ $user = $statement->fetch();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
+    // ==============================================
+    // GET UPDATED INFORMATION
+    // ==============================================
 
-    // Get updated information
-    $user['full_name'] =
-        trim($_POST['full_name'] ?? '');
+    $fullName = trim(
+        $_POST['full_name'] ?? ''
+    );
 
-    $user['address'] =
-        trim($_POST['address'] ?? '');
+    $address = trim(
+        $_POST['address'] ?? ''
+    );
 
-    $user['phone'] =
-        trim($_POST['phone'] ?? '');
-
+    $phone = trim(
+        $_POST['phone'] ?? ''
+    );
 
     // ==============================================
     // UPDATE - UPDATE CURRENT USER'S PROFILE
     // ==============================================
 
-    $update = $pdo->prepare(
-        'UPDATE users
+    $updateProfile = mysqli_prepare(
+        $conn,
+        "UPDATE users
          SET
             full_name = ?,
             address = ?,
             phone = ?
-         WHERE user_id = ?'
+         WHERE user_id = ?"
     );
 
-
-    $update->execute([
-
-        $user['full_name'],
-
-        $user['address'],
-
-        $user['phone'],
-
+    // Bind updated information.
+    mysqli_stmt_bind_param(
+        $updateProfile,
+        "sssi",
+        $fullName,
+        $address,
+        $phone,
         $_SESSION['user_id']
-    ]);
+    );
 
+    // Execute update.
+    mysqli_stmt_execute($updateProfile);
+
+    // ==============================================
+    // SUCCESS MESSAGE
+    // ==============================================
 
     flash(
         'success',
         'Profile updated successfully.'
     );
 
-
+    // Return to profile page.
     redirect('profile.php');
 }
 
+// ==================================================
+// PAGE HEADER
+// ==================================================
 
-page_header('Edit Profile');
+include '../includes/header.php';
 
 ?>
 
@@ -86,9 +111,13 @@ page_header('Edit Profile');
 
     <h1>Edit Profile</h1>
 
+    <!-- ==========================================
+         UPDATE PROFILE FORM
+    =========================================== -->
 
     <form method="post">
 
+        <!-- Full Name -->
 
         <label>
             Full Name
@@ -101,6 +130,7 @@ page_header('Edit Profile');
 
         </label>
 
+        <!-- Address -->
 
         <label>
             Address
@@ -108,9 +138,9 @@ page_header('Edit Profile');
             <textarea
                 name="address"
             ><?= e($user['address']) ?></textarea>
-
         </label>
 
+        <!-- Phone -->
 
         <label>
             Phone
@@ -120,14 +150,16 @@ page_header('Edit Profile');
                 name="phone"
                 value="<?= e($user['phone']) ?>"
             >
-
         </label>
 
+        <!-- Submit Button -->
 
         <button type="submit">
             Save Changes
         </button>
 
+
+        <!-- Cancel Button -->
 
         <a
             class="button secondary"
@@ -135,10 +167,11 @@ page_header('Edit Profile');
         >
             Cancel
         </a>
-
     </form>
-
 </section>
 
+<?php
 
-<?php page_footer(); ?>
+include '../includes/footer.php';
+
+?>
