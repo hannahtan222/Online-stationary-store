@@ -1,7 +1,7 @@
 <?php
 
-require 'db_connect.php';
-
+session_start();
+require_once('../config/db_connection.php');
 
 // ==================================================
 // VARIABLES
@@ -10,7 +10,6 @@ require 'db_connect.php';
 $errors = [];
 
 $fields = [
-
     'username' => '',
     'email' => '',
     'full_name' => '',
@@ -18,20 +17,17 @@ $fields = [
     'phone' => ''
 ];
 
-
 // ==================================================
 // PROCESS REGISTRATION
 // ==================================================
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-
     // ==============================================
     // GET FORM DATA
     // ==============================================
 
     foreach ($fields as $key => $value) {
-
         $fields[$key] =
             trim($_POST[$key] ?? '');
     }
@@ -42,7 +38,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $confirmPassword =
         $_POST['confirm_password'] ?? '';
 
-
     // ==============================================
     // VALIDATE USER INPUT
     // ==============================================
@@ -52,11 +47,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         !$fields['email'] ||
         !$password
     ) {
-
         $errors[] =
             'Please complete all required fields.';
     }
-
 
     if (
         $fields['email'] &&
@@ -65,53 +58,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             FILTER_VALIDATE_EMAIL
         )
     ) {
-
         $errors[] =
             'Please enter a valid email address.';
     }
 
-
     if (strlen($password) < 6) {
-
         $errors[] =
             'Password must be at least 6 characters.';
     }
 
-
     if ($password !== $confirmPassword) {
-
         $errors[] =
             'Passwords do not match.';
     }
-
 
     // ==============================================
     // CHECK DUPLICATE USER
     // ==============================================
 
     if (!$errors) {
-
-        $checkUser = $pdo->prepare(
-            'SELECT user_id
-             FROM users
-             WHERE username = ?
-             OR email = ?'
+        $checkUser = mysqli_prepare(
+            $conn,
+            "SELECT user_id FROM users WHERE username = ? OR email = ?"
         );
 
-        $checkUser->execute([
+        mysqli_stmt_bind_param(
+            $checkUser,
+            "ss",
             $fields['username'],
             $fields['email']
-        ]);
+        );
 
-
-        if ($checkUser->fetch()) {
-
-            $errors[] =
-                'That username or email is already registered.';
-
+        mysqli_stmt_execute($checkUser);
+        
+        $result = mysqli_stmt_get_result($checkUser);
+        
+        if (mysqli_fetch_assoc($result)) {
+            $errors[] = 'That username or email is already registered.';
+}
         } else {
-
-
             // ======================================
             // CREATE - REGISTER NEW USER
             // ======================================
@@ -123,21 +108,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     PASSWORD_DEFAULT
                 );
 
-
-            $createUser = $pdo->prepare(
-                'INSERT INTO users
-                (
-                    username,
-                    email,
-                    password,
-                    full_name,
-                    address,
-                    phone
-                )
-                VALUES (?, ?, ?, ?, ?, ?)'
-            );
-
-
+           $createUser = mysqli_prepare(
+               $conn,
+               "INSERT INTO users
+               (username, email, password, full_name, address, phone)
+               VALUES (?, ?, ?, ?, ?, ?)"
+           );
+        
+        $passwordHash = password_hash($password, PASSWORD_DEFAULT);
+        mysqli_stmt_bind_param(
+            $createUser,
+            "ssssss",
+            $fields['username'],
+            $fields['email'],
+            $passwordHash,
+            $fields['full_name'],
+            $fields['address'],
+            $fields['phone']
+        );
+        
+        mysqli_stmt_execute($createUser);
+        
             $createUser->execute([
 
                 $fields['username'],
@@ -153,7 +144,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $fields['phone']
             ]);
 
-
             flash(
                 'success',
                 'Account created successfully. Please log in.'
@@ -163,16 +153,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
-
-
-page_header('Register');
-
+include '../includes/header.php';
 ?>
 
 <section class="form-card">
 
     <h1>Create Account</h1>
-
 
     <!-- ==========================================
          DISPLAY ERRORS
@@ -181,16 +167,12 @@ page_header('Register');
     <?php foreach ($errors as $error): ?>
 
         <div class="message error">
-
             <?= e($error) ?>
-
         </div>
 
     <?php endforeach; ?>
 
-
     <form method="post">
-
 
         <label>
             Username *
@@ -201,9 +183,7 @@ page_header('Register');
                 required
                 value="<?= e($fields['username']) ?>"
             >
-
         </label>
-
 
         <label>
             Email *
@@ -214,9 +194,7 @@ page_header('Register');
                 required
                 value="<?= e($fields['email']) ?>"
             >
-
         </label>
-
 
         <label>
             Full Name
@@ -226,9 +204,7 @@ page_header('Register');
                 name="full_name"
                 value="<?= e($fields['full_name']) ?>"
             >
-
         </label>
-
 
         <label>
             Address
@@ -236,9 +212,7 @@ page_header('Register');
             <textarea
                 name="address"
             ><?= e($fields['address']) ?></textarea>
-
         </label>
-
 
         <label>
             Phone
@@ -248,9 +222,7 @@ page_header('Register');
                 name="phone"
                 value="<?= e($fields['phone']) ?>"
             >
-
         </label>
-
 
         <label>
             Password *
@@ -260,9 +232,7 @@ page_header('Register');
                 name="password"
                 required
             >
-
         </label>
-
 
         <label>
             Confirm Password *
@@ -272,17 +242,12 @@ page_header('Register');
                 name="confirm_password"
                 required
             >
-
         </label>
-
 
         <button type="submit">
             Create Account
         </button>
-
     </form>
-
 </section>
 
-
-<?php page_footer(); ?>
+<?php include '../includes/footer.php'; ?>
