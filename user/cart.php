@@ -3,30 +3,57 @@
 session_start();
 
 require_once('../config/db_connection.php');
+require_once('../config/auth.php');
+
+require_login();
 
 // ==================================================
-// READ - RETRIEVE CATEGORIES
+// READ - RETRIEVE CURRENT USER'S CART
 // ==================================================
 
-$query = mysqli_query(
+$query = mysqli_prepare(
     $conn,
     "SELECT
-        c.category_id,
-        c.category_name,
-        COUNT(p.product_id) AS product_count
-     FROM categories c
-     LEFT JOIN products p
-        ON p.category_id = c.category_id
-     GROUP BY
-        c.category_id,
-        c.category_name
-     ORDER BY c.category_name"
+        c.cart_id,
+        c.quantity,
+        p.product_name,
+        p.price,
+        p.stock_quantity,
+        p.image_url
+     FROM cart c
+     JOIN products p
+        ON p.product_id = c.product_id
+     WHERE c.user_id = ?
+     ORDER BY c.cart_id DESC"
 );
 
-$categories = mysqli_fetch_all(
+mysqli_stmt_bind_param(
     $query,
+    "i",
+    $_SESSION['user_id']
+);
+
+mysqli_stmt_execute($query);
+
+$result = mysqli_stmt_get_result($query);
+
+$items = mysqli_fetch_all(
+    $result,
     MYSQLI_ASSOC
 );
+
+// ==================================================
+// CALCULATE CART TOTAL
+// ==================================================
+
+$total = 0;
+
+foreach ($items as $item) {
+
+    $total +=
+        $item['price'] *
+        $item['quantity'];
+}
 
 // ==================================================
 // DISPLAY PAGE
@@ -36,43 +63,161 @@ include '../includes/header.php';
 
 ?>
 
-<section class="page-intro">
+<section class="card">
 
-    <h1>Shop by Category</h1>
+    <h1>Shopping Cart</h1>
 
-    <p>
-        Browse our stationery by category.
-    </p>
+    <?php if (!$items): ?>
 
-</section>
+        <div class="empty-state">
 
-
-<div class="grid">
-
-    <?php foreach ($categories as $category): ?>
-
-        <section class="card">
-
-            <h2>
-                <?= e($category['category_name']) ?>
-            </h2>
+            <h2>Your cart is empty</h2>
 
             <p>
-                <?= $category['product_count'] ?>
-                products
+                Add some stationery products
+                to your cart.
             </p>
 
             <a
                 class="button"
-                href="products.php?category=<?= $category['category_id'] ?>"
+                href="products.php"
             >
-                Shop Category
+                Continue Shopping
             </a>
 
-        </section>
+        </div>
 
-    <?php endforeach; ?>
+    <?php else: ?>
 
-</div>
+        <!-- ==========================================
+             CART TABLE
+        =========================================== -->
+
+        <div class="table">
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Unit Price</th>
+                        <th>Quantity</th>
+                        <th>Subtotal</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    <?php foreach ($items as $item): ?>
+
+                        <tr>
+                            <td>
+                                <?= e($item['product_name']) ?>
+                            </td>
+
+                            <td>
+                                RM
+                                <?= number_format(
+                                    $item['price'],
+                                    2
+                                ) ?>
+                            </td>
+
+                            <td>
+
+                                <!-- UPDATE CART -->
+
+                                <form
+                                    action="update_cart.php"
+                                    method="post"
+                                >
+
+                                    <input
+                                        type="hidden"
+                                        name="cart_id"
+                                        value="<?= $item['cart_id'] ?>"
+                                    >
+
+                                    <input
+                                        type="number"
+                                        name="quantity"
+                                        value="<?= $item['quantity'] ?>"
+                                        min="1"
+                                        max="<?= $item['stock_quantity'] ?>"
+                                    >
+
+                                    <button type="submit">
+                                        Update
+                                    </button>
+                                </form>
+                            </td>
+
+                            <td>
+                                RM
+                                <?= number_format(
+                                    $item['price'] *
+                                    $item['quantity'],
+                                    2
+                                ) ?>
+                            </td>
+
+                            <td>
+
+                                <!-- DELETE CART ITEM -->
+
+                                <form
+                                    action="remove_cart.php"
+                                    method="post"
+                                >
+
+                                    <input
+                                        type="hidden"
+                                        name="cart_id"
+                                        value="<?= $item['cart_id'] ?>"
+                                    >
+
+                                    <button type="submit">
+                                        Remove
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ==========================================
+             CART TOTAL
+        =========================================== -->
+
+        <h2>
+            Total:
+            RM <?= number_format($total, 2) ?>
+        </h2>
+
+
+        <div class="cart-actions">
+
+            <a
+                class="button"
+                href="products.php"
+            >
+                Continue Shopping
+            </a>
+
+            <a
+                class="button"
+                href="checkout.php"
+            >
+                Proceed to Checkout
+            </a>
+
+        </div>
+
+    <?php endif; ?>
+
+</section>
+
 
 <?php include '../includes/footer.php'; ?>
