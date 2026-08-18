@@ -1,0 +1,330 @@
+/* =========================================================
+   Online Stationery Store
+   ========================================================= */
+
+
+/* =========================================================
+   1. COLOUR VARIABLES
+   ========================================================= */
+
+:root {
+    --bg: #F8F6F1;
+    --primary: #5B4636;
+    --secondary: #D8C3A5;
+    --accent: #E8A87C;
+    --text: #2F2F2F;
+}
+
+
+/* =========================================================
+   2. GENERAL / GLOBAL STYLES
+   ========================================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Arial, sans-serif;
+}
+
+
+/* Main width for navigation and page content */
+
+.nav,
+.container {
+    width: min(1100px, 92%);
+    margin: auto;
+}
+
+
+/* =========================================================
+   3. NAVIGATION BAR
+   ========================================================= */
+
+.nav {
+    display: flex;
+    min-height: 68px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+
+/* PaperNest logo */
+
+.brand {
+    color: var(--primary);
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+
+/* Navigation links */
+
+nav {
+    display: flex;
+    gap: 10px;
+}
+
+nav a {
+    color: var(--text);
+    text-decoration: none;
+    padding: 8px;
+}
+
+
+/* Hover and active navigation links */
+
+nav a.active,
+nav a:hover {
+    background: var(--secondary);
+    border-radius: 5px;
+}
+
+
+/* =========================================================
+   4. MAIN PAGE CONTAINER
+   ========================================================= */
+
+.container {
+    padding: 35px 0;
+    min-height: 75vh;
+}
+
+
+/* =========================================================
+   5. CARDS
+   ========================================================= */
+
+.card,
+.form-card {
+    background: white;
+    border-radius: 10px;
+    padding: 25px;
+
+    /* Soft shadow around cards */
+    box-shadow: 0 3px 12px #0001;
+}
+
+
+/* Form card has a maximum width */
+
+.form-card {
+    max-width: 600px;
+    margin: auto;
+}
+
+
+/* =========================================================
+   6. FORM ELEMENTS
+   ========================================================= */
+
+label {
+    display: block;
+    margin: 12px 0;
+    font-weight: bold;
+}
+
+
+/* Text input, textarea and dropdown */
+
+input,
+textarea,
+select {
+    width: 100%;
+    padding: 10px;
+    margin-top: 4px;
+
+    border: 1px solid #bbb;
+    border-radius: 5px;
+
+    font: inherit;
+}
+
+
+/* =========================================================
+   7. BUTTONS
+   ========================================================= */
+
+button,
+.button {
+    background: var(--primary);
+    color: white;
+
+    border: 0;
+    border-radius: 5px;
+
+    padding: 10px 15px;
+
+    text-decoration: none;
+    cursor: pointer;
+}
+
+
+/* =========================================================
+   8. PRODUCT / CONTENT GRID
+   ========================================================= */
+
+.grid {
+    display: grid;
+
+    /* Four cards per row on desktop */
+    grid-template-columns: repeat(4, 1fr);
+
+    gap: 16px;
+}
+
+
+/* =========================================================
+   9. SUCCESS AND ERROR MESSAGES
+   ========================================================= */
+
+.message {
+    padding: 12px;
+    margin-bottom: 15px;
+}
+
+
+/* Error message */
+
+.error {
+    background: #f8dede;
+}
+
+
+/* Success message */
+
+.success {
+    background: #daf0df;
+}
+
+
+/* =========================================================
+   10. TABLES
+   ========================================================= */
+
+/* Allows tables to scroll horizontally on small screens */
+
+.table {
+    overflow-x: auto;
+}
+
+
+/* Main table */
+
+table {
+    width: 100%;
+    min-width: 620px;
+
+    border-collapse: collapse;
+}
+
+
+/* Table headings and cells */
+
+th,
+td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+
+    text-align: left;
+}
+
+
+/* =========================================================
+   11. FOOTER
+   ========================================================= */
+
+footer {
+    background: var(--primary);
+    color: white;
+
+    text-align: center;
+
+    padding: 25px;
+}
+
+
+/* =========================================================
+   12. MOBILE MENU BUTTON
+   ========================================================= */
+
+/* Hidden on desktop */
+
+.menu-button {
+    display: none;
+}
+
+
+/* =========================================================
+   13. TABLET RESPONSIVE DESIGN
+   Screen width: 800px or below
+   ========================================================= */
+
+@media (max-width: 800px) {
+
+    /* Change 4-column grid into 2-column grid */
+
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    /* Show mobile menu button */
+
+    .menu-button {
+        display: block;
+    }
+
+    /* Hide navigation menu initially */
+
+    .nav {
+        position: relative;
+    }
+
+    .nav nav {
+        display: none;
+
+        position: absolute;
+
+        top: 68px;
+        left: 0;
+        right: 0;
+
+        background: white;
+
+        padding: 12px;
+
+        flex-direction: column;
+    }
+
+    /* Show menu when JavaScript adds "open" class */
+
+    .nav nav.open {
+        display: flex;
+    }
+}
+
+
+/* =========================================================
+   14. MOBILE RESPONSIVE DESIGN
+   Screen width: 500px or below
+   ========================================================= */
+
+@media (max-width: 500px) {
+
+    /* One card per row */
+
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Reduce page spacing */
+
+    .container {
+        padding: 20px 0;
+    }
+}

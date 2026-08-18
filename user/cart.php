@@ -1,15 +1,19 @@
 <?php
 
-require 'db_connect.php';
-require_login();
+session_start();
 
+require_once('../config/db_connection.php');
+require_once('../config/auth.php');
+
+require_login();
 
 // ==================================================
 // READ - RETRIEVE CURRENT USER'S CART
 // ==================================================
 
-$query = $pdo->prepare(
-    'SELECT
+$query = mysqli_prepare(
+    $conn,
+    "SELECT
         c.cart_id,
         c.quantity,
         p.product_name,
@@ -20,15 +24,23 @@ $query = $pdo->prepare(
      JOIN products p
         ON p.product_id = c.product_id
      WHERE c.user_id = ?
-     ORDER BY c.cart_id DESC'
+     ORDER BY c.cart_id DESC"
 );
 
-$query->execute([
+mysqli_stmt_bind_param(
+    $query,
+    "i",
     $_SESSION['user_id']
-]);
+);
 
-$items = $query->fetchAll();
+mysqli_stmt_execute($query);
 
+$result = mysqli_stmt_get_result($query);
+
+$items = mysqli_fetch_all(
+    $result,
+    MYSQLI_ASSOC
+);
 
 // ==================================================
 // CALCULATE CART TOTAL
@@ -39,18 +51,21 @@ $total = 0;
 foreach ($items as $item) {
 
     $total +=
-        $item['price'] * $item['quantity'];
+        $item['price'] *
+        $item['quantity'];
 }
 
+// ==================================================
+// DISPLAY PAGE
+// ==================================================
 
-page_header('Shopping Cart');
+include '../includes/header.php';
 
 ?>
 
 <section class="card">
 
     <h1>Shopping Cart</h1>
-
 
     <?php if (!$items): ?>
 
@@ -72,9 +87,7 @@ page_header('Shopping Cart');
 
         </div>
 
-
     <?php else: ?>
-
 
         <!-- ==========================================
              CART TABLE
@@ -83,9 +96,7 @@ page_header('Shopping Cart');
         <div class="table">
 
             <table>
-
                 <thead>
-
                     <tr>
                         <th>Product</th>
                         <th>Unit Price</th>
@@ -93,7 +104,6 @@ page_header('Shopping Cart');
                         <th>Subtotal</th>
                         <th>Action</th>
                     </tr>
-
                 </thead>
 
                 <tbody>
@@ -101,7 +111,6 @@ page_header('Shopping Cart');
                     <?php foreach ($items as $item): ?>
 
                         <tr>
-
                             <td>
                                 <?= e($item['product_name']) ?>
                             </td>
@@ -140,9 +149,7 @@ page_header('Shopping Cart');
                                     <button type="submit">
                                         Update
                                     </button>
-
                                 </form>
-
                             </td>
 
                             <td>
@@ -172,21 +179,13 @@ page_header('Shopping Cart');
                                     <button type="submit">
                                         Remove
                                     </button>
-
                                 </form>
-
                             </td>
-
                         </tr>
-
                     <?php endforeach; ?>
-
                 </tbody>
-
             </table>
-
         </div>
-
 
         <!-- ==========================================
              CART TOTAL
@@ -216,14 +215,9 @@ page_header('Shopping Cart');
 
         </div>
 
-
     <?php endif; ?>
 
 </section>
 
 
-<?php
-
-page_footer();
-
-?>
+<?php include '../includes/footer.php'; ?>

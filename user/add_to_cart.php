@@ -1,21 +1,24 @@
 <?php
 
-require 'db_connect.php';
-require_login();
+session_start();
 
+require_once('../config/db_connection.php');
+require_once('../config/auth.php');
+
+require_login();
 
 // ==================================================
 // GET PRODUCT INFORMATION
 // ==================================================
 
-// Get product ID submitted by the user
+// Get product ID submitted by the user.
 $productId = filter_input(
     INPUT_POST,
     'product_id',
     FILTER_VALIDATE_INT
 );
 
-// Get quantity submitted by the user
+// Get quantity submitted by the user.
 // If no quantity is provided, use 1.
 $quantity = filter_input(
     INPUT_POST,
@@ -27,20 +30,28 @@ if (!$quantity) {
     $quantity = 1;
 }
 
-
 // ==================================================
 // READ - CHECK PRODUCT STOCK
 // ==================================================
 
-$productQuery = $pdo->prepare(
-    'SELECT stock_quantity
+$productQuery = mysqli_prepare(
+    $conn,
+    "SELECT stock_quantity
      FROM products
-     WHERE product_id = ?'
+     WHERE product_id = ?"
 );
 
-$productQuery->execute([$productId]);
+mysqli_stmt_bind_param(
+    $productQuery,
+    "i",
+    $productId
+);
 
-$product = $productQuery->fetch();
+mysqli_stmt_execute($productQuery);
+
+$result = mysqli_stmt_get_result($productQuery);
+
+$product = mysqli_fetch_assoc($result);
 
 
 // Check whether the product exists
@@ -50,7 +61,6 @@ if (
     $quantity < 1 ||
     $quantity > $product['stock_quantity']
 ) {
-
     flash(
         'error',
         'This product is unavailable in that quantity.'
@@ -59,25 +69,30 @@ if (
     redirect('products.php');
 }
 
-
 // ==================================================
 // READ - CHECK EXISTING CART ITEM
 // ==================================================
 
-$cartQuery = $pdo->prepare(
-    'SELECT cart_id, quantity
+$cartQuery = mysqli_prepare(
+    $conn,
+    "SELECT cart_id, quantity
      FROM cart
      WHERE user_id = ?
-     AND product_id = ?'
+     AND product_id = ?"
 );
 
-$cartQuery->execute([
+mysqli_stmt_bind_param(
+    $cartQuery,
+    "ii",
     $_SESSION['user_id'],
     $productId
-]);
+);
 
-$cartItem = $cartQuery->fetch();
+mysqli_stmt_execute($cartQuery);
 
+$result = mysqli_stmt_get_result($cartQuery);
+
+$cartItem = mysqli_fetch_assoc($result);
 
 // ==================================================
 // UPDATE OR CREATE CART ITEM
@@ -86,7 +101,7 @@ $cartItem = $cartQuery->fetch();
 if ($cartItem) {
 
     // ==============================================
-    // UPDATE - Increase Existing Cart Quantity
+    // UPDATE - INCREASE EXISTING CART QUANTITY
     // ==============================================
 
     $newQuantity =
@@ -101,16 +116,21 @@ if ($cartItem) {
 
     } else {
 
-        $updateCart = $pdo->prepare(
-            'UPDATE cart
+        $updateCart = mysqli_prepare(
+            $conn,
+            "UPDATE cart
              SET quantity = quantity + ?
-             WHERE cart_id = ?'
+             WHERE cart_id = ?"
         );
 
-        $updateCart->execute([
+        mysqli_stmt_bind_param(
+            $updateCart,
+            "ii",
             $quantity,
             $cartItem['cart_id']
-        ]);
+        );
+
+        mysqli_stmt_execute($updateCart);
 
         flash(
             'success',
@@ -121,27 +141,31 @@ if ($cartItem) {
 } else {
 
     // ==============================================
-    // CREATE - Add New Item To Cart
+    // CREATE - ADD NEW ITEM TO CART
     // ==============================================
 
-    $addCart = $pdo->prepare(
-        'INSERT INTO cart
+    $addCart = mysqli_prepare(
+        $conn,
+        "INSERT INTO cart
         (user_id, product_id, quantity)
-        VALUES (?, ?, ?)'
+        VALUES (?, ?, ?)"
     );
 
-    $addCart->execute([
+    mysqli_stmt_bind_param(
+        $addCart,
+        "iii",
         $_SESSION['user_id'],
         $productId,
         $quantity
-    ]);
+    );
+
+    mysqli_stmt_execute($addCart);
 
     flash(
         'success',
         'Product added to cart successfully.'
     );
 }
-
 
 // ==================================================
 // REDIRECT TO CART

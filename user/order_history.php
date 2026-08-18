@@ -1,32 +1,52 @@
 <?php
 
-require '../config/db_connection.php';
-require_login();
+session_start();
 
+require_once('../config/db_connection.php');
+require_once('../config/auth.php');
+
+require_login();
 
 // ==================================================
 // READ - RETRIEVE CURRENT USER'S ORDERS
 // ==================================================
 
-$orderQuery = $pdo->prepare(
-    'SELECT
+$orderQuery = mysqli_prepare(
+    $conn,
+    "SELECT
         order_id,
         total_amount,
         order_date,
         status
      FROM orders
      WHERE user_id = ?
-     ORDER BY order_date DESC'
+     ORDER BY order_date DESC"
 );
 
-$orderQuery->execute([
+// Bind the logged-in user's ID.
+mysqli_stmt_bind_param(
+    $orderQuery,
+    "i",
     $_SESSION['user_id']
-]);
+);
 
-$orders = $orderQuery->fetchAll();
+// Execute the query.
+mysqli_stmt_execute($orderQuery);
 
+// Get query result.
+$result = mysqli_stmt_get_result($orderQuery);
 
-page_header('Order History');
+// Convert results into an associative array.
+$orders = mysqli_fetch_all(
+    $result,
+    MYSQLI_ASSOC
+);
+
+// ==================================================
+// PAGE HEADER
+// ==================================================
+
+include '../includes/header.php';
 
 ?>
 
@@ -34,8 +54,11 @@ page_header('Order History');
 
     <h1>Order History</h1>
 
-
     <?php if (!$orders): ?>
+
+        <!-- ==========================================
+             EMPTY ORDER HISTORY
+        =========================================== -->
 
         <div class="empty-state">
 
@@ -50,29 +73,28 @@ page_header('Order History');
 
     <?php else: ?>
 
+        <!-- ==========================================
+             ORDER TABLE
+        =========================================== -->
+
         <div class="table">
 
             <table>
-
                 <thead>
-
                     <tr>
                         <th>Order ID</th>
                         <th>Date</th>
                         <th>Total</th>
                         <th>Status</th>
                     </tr>
-
                 </thead>
 
                 <tbody>
 
                     <?php foreach ($orders as $order): ?>
-
                         <tr>
-
                             <td>
-                                #<?= $order['order_id'] ?>
+                                #<?= e($order['order_id']) ?>
                             </td>
 
                             <td>
@@ -90,20 +112,16 @@ page_header('Order History');
                             <td>
                                 <?= e($order['status']) ?>
                             </td>
-
                         </tr>
-
                     <?php endforeach; ?>
-
                 </tbody>
-
             </table>
-
         </div>
-
     <?php endif; ?>
-
 </section>
 
+<?php
 
-<?php page_footer(); ?>
+include '../includes/footer.php';
+
+?>
