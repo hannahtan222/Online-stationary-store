@@ -1,26 +1,26 @@
 <?php
 
-require 'db_connect.php';
-
+session_start();
+require_once('../config/db_connection.php');
 
 // ==================================================
 // READ - RETRIEVE CATEGORIES
 // ==================================================
 
-$categories = $pdo->query(
-    'SELECT
+$query = mysqli_query(
+    $conn,
+    "SELECT
         c.category_id,
         c.category_name,
         COUNT(p.product_id) AS product_count
      FROM categories c
      LEFT JOIN products p
         ON p.category_id = c.category_id
-     GROUP BY
-        c.category_id,
-        c.category_name
-     ORDER BY c.category_name'
-)->fetchAll();
+     GROUP BY c.category_id, c.category_name
+     ORDER BY c.category_name"
+);
 
+$categories = mysqli_fetch_all($query, MYSQLI_ASSOC);
 
 page_header('Categories');
 
@@ -35,7 +35,6 @@ page_header('Categories');
     </p>
 
 </section>
-
 
 <div class="grid">
 
@@ -64,6 +63,5 @@ page_header('Categories');
     <?php endforeach; ?>
 
 </div>
-
 
 <?php page_footer(); ?>
