@@ -1,6 +1,7 @@
 <?php
 
 session_start();
+
 require_once('../config/db_connection.php');
 
 // ==================================================
@@ -16,13 +17,22 @@ $query = mysqli_query(
      FROM categories c
      LEFT JOIN products p
         ON p.category_id = c.category_id
-     GROUP BY c.category_id, c.category_name
+     GROUP BY
+        c.category_id,
+        c.category_name
      ORDER BY c.category_name"
 );
 
-$categories = mysqli_fetch_all($query, MYSQLI_ASSOC);
+$categories = mysqli_fetch_all(
+    $query,
+    MYSQLI_ASSOC
+);
 
-page_header('Categories');
+// ==================================================
+// DISPLAY PAGE
+// ==================================================
+
+include '../includes/header.php';
 
 ?>
 
@@ -64,4 +74,4 @@ page_header('Categories');
 
 </div>
 
-<?php page_footer(); ?>
+<?php include '../includes/footer.php'; ?>
