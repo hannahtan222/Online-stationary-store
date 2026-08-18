@@ -1,8 +1,10 @@
 <?php
 
-require 'db_connect.php';
-require_login();
+session_start();
+require_once('../config/db_connection.php');
+require_once('../config/auth.php');
 
+require_login();
 
 // ==================================================
 // READ - RETRIEVE CURRENT USER'S CART
@@ -29,7 +31,6 @@ $query->execute([
 
 $items = $query->fetchAll();
 
-
 // ==================================================
 // CALCULATE CART TOTAL
 // ==================================================
@@ -42,15 +43,12 @@ foreach ($items as $item) {
         $item['price'] * $item['quantity'];
 }
 
-
 page_header('Shopping Cart');
-
 ?>
 
 <section class="card">
 
     <h1>Shopping Cart</h1>
-
 
     <?php if (!$items): ?>
 
@@ -72,9 +70,7 @@ page_header('Shopping Cart');
 
         </div>
 
-
     <?php else: ?>
-
 
         <!-- ==========================================
              CART TABLE
@@ -83,9 +79,7 @@ page_header('Shopping Cart');
         <div class="table">
 
             <table>
-
                 <thead>
-
                     <tr>
                         <th>Product</th>
                         <th>Unit Price</th>
@@ -93,19 +87,14 @@ page_header('Shopping Cart');
                         <th>Subtotal</th>
                         <th>Action</th>
                     </tr>
-
                 </thead>
-
+                
                 <tbody>
-
                     <?php foreach ($items as $item): ?>
-
                         <tr>
-
                             <td>
                                 <?= e($item['product_name']) ?>
                             </td>
-
                             <td>
                                 RM
                                 <?= number_format(
@@ -113,16 +102,12 @@ page_header('Shopping Cart');
                                     2
                                 ) ?>
                             </td>
-
                             <td>
-
                                 <!-- UPDATE CART -->
-
                                 <form
                                     action="update_cart.php"
                                     method="post"
                                 >
-
                                     <input
                                         type="hidden"
                                         name="cart_id"
@@ -140,11 +125,9 @@ page_header('Shopping Cart');
                                     <button type="submit">
                                         Update
                                     </button>
-
                                 </form>
-
                             </td>
-
+                            
                             <td>
                                 RM
                                 <?= number_format(
@@ -155,14 +138,11 @@ page_header('Shopping Cart');
                             </td>
 
                             <td>
-
                                 <!-- DELETE CART ITEM -->
-
                                 <form
                                     action="remove_cart.php"
                                     method="post"
                                 >
-
                                     <input
                                         type="hidden"
                                         name="cart_id"
@@ -172,21 +152,15 @@ page_header('Shopping Cart');
                                     <button type="submit">
                                         Remove
                                     </button>
-
                                 </form>
-
                             </td>
-
                         </tr>
 
                     <?php endforeach; ?>
 
                 </tbody>
-
             </table>
-
         </div>
-
 
         <!-- ==========================================
              CART TOTAL
@@ -196,7 +170,6 @@ page_header('Shopping Cart');
             Total:
             RM <?= number_format($total, 2) ?>
         </h2>
-
 
         <div class="cart-actions">
 
@@ -216,9 +189,7 @@ page_header('Shopping Cart');
 
         </div>
 
-
     <?php endif; ?>
-
 </section>
 
 
