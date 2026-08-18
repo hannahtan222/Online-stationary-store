@@ -1,15 +1,19 @@
 <?php
 
-require 'db_connect.php';
-require_login();
+session_start();
 
+require_once('../config/db_connection.php');
+require_once('../config/auth.php');
+
+require_login();
 
 // ==================================================
 // READ - RETRIEVE CART ITEMS
 // ==================================================
 
-$cartQuery = $pdo->prepare(
-    'SELECT
+$cartQuery = mysqli_prepare(
+    $conn,
+    "SELECT
         c.product_id,
         c.quantity,
         p.product_name,
@@ -18,34 +22,48 @@ $cartQuery = $pdo->prepare(
      FROM cart c
      JOIN products p
         ON p.product_id = c.product_id
-     WHERE c.user_id = ?'
+     WHERE c.user_id = ?"
 );
 
-$cartQuery->execute([
+mysqli_stmt_bind_param(
+    $cartQuery,
+    "i",
     $_SESSION['user_id']
-]);
+);
 
-$items = $cartQuery->fetchAll();
+mysqli_stmt_execute($cartQuery);
 
+$result = mysqli_stmt_get_result($cartQuery);
+
+$items = mysqli_fetch_all(
+    $result,
+    MYSQLI_ASSOC
+);
 
 // ==================================================
 // READ - RETRIEVE CUSTOMER INFORMATION
 // ==================================================
 
-$userQuery = $pdo->prepare(
-    'SELECT
+$userQuery = mysqli_prepare(
+    $conn,
+    "SELECT
         full_name,
         address
      FROM users
-     WHERE user_id = ?'
+     WHERE user_id = ?"
 );
 
-$userQuery->execute([
+mysqli_stmt_bind_param(
+    $userQuery,
+    "i",
     $_SESSION['user_id']
-]);
+);
 
-$user = $userQuery->fetch();
+mysqli_stmt_execute($userQuery);
 
+$result = mysqli_stmt_get_result($userQuery);
+
+$user = mysqli_fetch_assoc($result);
 
 // ==================================================
 // PROCESS CHECKOUT
@@ -55,11 +73,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     try {
 
-        // Start database transaction
-        $pdo->beginTransaction();
+        // Start database transaction.
+        mysqli_begin_transaction($conn);
 
         $total = 0;
-
 
         // ==========================================
         // CHECK STOCK AND CALCULATE TOTAL
@@ -83,97 +100,114 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $item['quantity'];
         }
 
-
         // ==========================================
-        // CREATE - CREATE NEW ORDER
+        // GET SHIPPING ADDRESS
         // ==========================================
 
         $shippingAddress =
             trim($_POST['shipping_address'] ?? '');
 
-        $createOrder = $pdo->prepare(
-            'INSERT INTO orders
+        // ==========================================
+        // CREATE - CREATE NEW ORDER
+        // ==========================================
+
+        $createOrder = mysqli_prepare(
+            $conn,
+            "INSERT INTO orders
             (
                 user_id,
                 total_amount,
                 shipping_address
             )
-            VALUES (?, ?, ?)'
+            VALUES (?, ?, ?)"
         );
 
-        $createOrder->execute([
+        mysqli_stmt_bind_param(
+            $createOrder,
+            "ids",
             $_SESSION['user_id'],
             $total,
             $shippingAddress
-        ]);
+        );
 
-        $orderId = $pdo->lastInsertId();
+        mysqli_stmt_execute($createOrder);
 
+        $orderId = mysqli_insert_id($conn);
 
         // ==========================================
         // CREATE - CREATE ORDER ITEMS
         // ==========================================
 
-        $createOrderItem = $pdo->prepare(
-            'INSERT INTO order_items
+        $createOrderItem = mysqli_prepare(
+            $conn,
+            "INSERT INTO order_items
             (
                 order_id,
                 product_id,
                 quantity,
                 price
             )
-            VALUES (?, ?, ?, ?)'
+            VALUES (?, ?, ?, ?)"
         );
-
 
         // ==========================================
         // UPDATE - REDUCE PRODUCT STOCK
         // ==========================================
 
-        $reduceStock = $pdo->prepare(
-            'UPDATE products
+        $reduceStock = mysqli_prepare(
+            $conn,
+            "UPDATE products
              SET stock_quantity =
                  stock_quantity - ?
-             WHERE product_id = ?'
+             WHERE product_id = ?"
         );
-
 
         foreach ($items as $item) {
 
-            // Create order item
-            $createOrderItem->execute([
+            // Create order item.
+            mysqli_stmt_bind_param(
+                $createOrderItem,
+                "iiid",
                 $orderId,
                 $item['product_id'],
                 $item['quantity'],
                 $item['price']
-            ]);
+            );
+
+            mysqli_stmt_execute($createOrderItem);
 
 
-            // Reduce product stock
-            $reduceStock->execute([
+            // Reduce product stock.
+            mysqli_stmt_bind_param(
+                $reduceStock,
+                "ii",
                 $item['quantity'],
                 $item['product_id']
-            ]);
-        }
+            );
 
+            mysqli_stmt_execute($reduceStock);
+        }
 
         // ==========================================
         // DELETE - CLEAR CART
         // ==========================================
 
-        $deleteCart = $pdo->prepare(
-            'DELETE FROM cart
-             WHERE user_id = ?'
+        $deleteCart = mysqli_prepare(
+            $conn,
+            "DELETE FROM cart
+             WHERE user_id = ?"
         );
 
-        $deleteCart->execute([
+        mysqli_stmt_bind_param(
+            $deleteCart,
+            "i",
             $_SESSION['user_id']
-        ]);
+        );
 
+        mysqli_stmt_execute($deleteCart);
 
-        // Complete transaction
-        $pdo->commit();
-
+        // Complete transaction.
+        mysqli_commit($conn);
 
         flash(
             'success',
@@ -182,13 +216,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         redirect('order_history.php');
 
-
     } catch (Throwable $error) {
 
-        // Undo all database changes if something fails
-        if ($pdo->inTransaction()) {
-            $pdo->rollBack();
-        }
+        // Undo database changes if something fails.
+        mysqli_rollback($conn);
 
         flash(
             'error',
@@ -199,8 +230,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+// ==================================================
+// DISPLAY CHECKOUT PAGE
+// ==================================================
 
-page_header('Checkout');
+include '../includes/header.php';
 
 ?>
 
@@ -218,7 +252,6 @@ page_header('Checkout');
         </strong>
     </p>
 
-
     <form method="post">
 
         <label>
@@ -231,14 +264,10 @@ page_header('Checkout');
 
         </label>
 
-
         <button type="submit">
             Confirm Order
         </button>
-
     </form>
-
 </section>
 
-
-<?php page_footer(); ?>
+<?php include '../includes/footer.php'; ?>
