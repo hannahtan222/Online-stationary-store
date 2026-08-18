@@ -1,8 +1,11 @@
 <?php
 
-require 'db_connect.php';
-require_login();
+session_start();
 
+require_once('../config/db_connection.php');
+require_once('../config/auth.php');
+
+require_login();
 
 // ==================================================
 // GET CART ID
@@ -14,26 +17,30 @@ $cartId = filter_input(
     FILTER_VALIDATE_INT
 );
 
-
 // ==================================================
 // DELETE - REMOVE CART ITEM
 // ==================================================
 
 if ($cartId) {
 
-    // The user_id condition makes sure
+    // The user_id condition ensures
     // users can only delete their own cart items.
 
-    $deleteCart = $pdo->prepare(
-        'DELETE FROM cart
+    $deleteCart = mysqli_prepare(
+        $conn,
+        "DELETE FROM cart
          WHERE cart_id = ?
-         AND user_id = ?'
+         AND user_id = ?"
     );
 
-    $deleteCart->execute([
+    mysqli_stmt_bind_param(
+        $deleteCart,
+        "ii",
         $cartId,
         $_SESSION['user_id']
-    ]);
+    );
+
+    mysqli_stmt_execute($deleteCart);
 
     flash(
         'success',
@@ -41,5 +48,8 @@ if ($cartId) {
     );
 }
 
+// ==================================================
+// REDIRECT TO CART
+// ==================================================
 
 redirect('cart.php');
