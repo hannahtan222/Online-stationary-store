@@ -1,6 +1,6 @@
 <?php
 
-require 'db_connect.php';
+require 'config/db_connection.php';
 require_login();
 
 
