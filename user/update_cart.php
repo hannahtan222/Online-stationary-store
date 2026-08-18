@@ -1,8 +1,11 @@
 <?php
 
-require 'db_connect.php';
-require_login();
+session_start();
 
+require_once('../config/db_connection.php');
+require_once('../config/auth.php');
+
+require_login();
 
 // ==================================================
 // GET CART INFORMATION
@@ -20,28 +23,35 @@ $quantity = filter_input(
     FILTER_VALIDATE_INT
 );
 
-
 // ==================================================
 // READ - CHECK CART ITEM
 // ==================================================
 
-$itemQuery = $pdo->prepare(
-    'SELECT
+$itemQuery = mysqli_prepare(
+    $conn,
+    "SELECT
         p.stock_quantity
      FROM cart c
      JOIN products p
         ON p.product_id = c.product_id
      WHERE c.cart_id = ?
-     AND c.user_id = ?'
+     AND c.user_id = ?"
 );
 
-$itemQuery->execute([
+mysqli_stmt_bind_param(
+    $itemQuery,
+    "ii",
     $cartId,
     $_SESSION['user_id']
-]);
+);
 
-$item = $itemQuery->fetch();
+mysqli_stmt_execute($itemQuery);
 
+$result =
+    mysqli_stmt_get_result($itemQuery);
+
+$item =
+    mysqli_fetch_assoc($result);
 
 // ==================================================
 // VALIDATE QUANTITY
@@ -60,24 +70,27 @@ if (
 
 } else {
 
-
     // ==============================================
     // UPDATE - CHANGE CART QUANTITY
     // ==============================================
 
-    $updateCart = $pdo->prepare(
-        'UPDATE cart
+    $updateCart = mysqli_prepare(
+        $conn,
+        "UPDATE cart
          SET quantity = ?
          WHERE cart_id = ?
-         AND user_id = ?'
+         AND user_id = ?"
     );
 
-    $updateCart->execute([
+    mysqli_stmt_bind_param(
+        $updateCart,
+        "iii",
         $quantity,
         $cartId,
         $_SESSION['user_id']
-    ]);
+    );
 
+    mysqli_stmt_execute($updateCart);
 
     flash(
         'success',
@@ -85,5 +98,8 @@ if (
     );
 }
 
+// ==================================================
+// REDIRECT TO CART
+// ==================================================
 
 redirect('cart.php');
