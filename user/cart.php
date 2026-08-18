@@ -1,6 +1,7 @@
 <?php
 
 session_start();
+
 require_once('../config/db_connection.php');
 require_once('../config/auth.php');
 
@@ -10,8 +11,9 @@ require_login();
 // READ - RETRIEVE CURRENT USER'S CART
 // ==================================================
 
-$query = $pdo->prepare(
-    'SELECT
+$query = mysqli_prepare(
+    $conn,
+    "SELECT
         c.cart_id,
         c.quantity,
         p.product_name,
@@ -22,14 +24,23 @@ $query = $pdo->prepare(
      JOIN products p
         ON p.product_id = c.product_id
      WHERE c.user_id = ?
-     ORDER BY c.cart_id DESC'
+     ORDER BY c.cart_id DESC"
 );
 
-$query->execute([
+mysqli_stmt_bind_param(
+    $query,
+    "i",
     $_SESSION['user_id']
-]);
+);
 
-$items = $query->fetchAll();
+mysqli_stmt_execute($query);
+
+$result = mysqli_stmt_get_result($query);
+
+$items = mysqli_fetch_all(
+    $result,
+    MYSQLI_ASSOC
+);
 
 // ==================================================
 // CALCULATE CART TOTAL
@@ -40,10 +51,16 @@ $total = 0;
 foreach ($items as $item) {
 
     $total +=
-        $item['price'] * $item['quantity'];
+        $item['price'] *
+        $item['quantity'];
 }
 
-page_header('Shopping Cart');
+// ==================================================
+// DISPLAY PAGE
+// ==================================================
+
+include '../includes/header.php';
+
 ?>
 
 <section class="card">
@@ -88,13 +105,16 @@ page_header('Shopping Cart');
                         <th>Action</th>
                     </tr>
                 </thead>
-                
+
                 <tbody>
+
                     <?php foreach ($items as $item): ?>
+
                         <tr>
                             <td>
                                 <?= e($item['product_name']) ?>
                             </td>
+
                             <td>
                                 RM
                                 <?= number_format(
@@ -102,12 +122,16 @@ page_header('Shopping Cart');
                                     2
                                 ) ?>
                             </td>
+
                             <td>
+
                                 <!-- UPDATE CART -->
+
                                 <form
                                     action="update_cart.php"
                                     method="post"
                                 >
+
                                     <input
                                         type="hidden"
                                         name="cart_id"
@@ -127,7 +151,7 @@ page_header('Shopping Cart');
                                     </button>
                                 </form>
                             </td>
-                            
+
                             <td>
                                 RM
                                 <?= number_format(
@@ -138,11 +162,14 @@ page_header('Shopping Cart');
                             </td>
 
                             <td>
+
                                 <!-- DELETE CART ITEM -->
+
                                 <form
                                     action="remove_cart.php"
                                     method="post"
                                 >
+
                                     <input
                                         type="hidden"
                                         name="cart_id"
@@ -155,9 +182,7 @@ page_header('Shopping Cart');
                                 </form>
                             </td>
                         </tr>
-
                     <?php endforeach; ?>
-
                 </tbody>
             </table>
         </div>
@@ -170,6 +195,7 @@ page_header('Shopping Cart');
             Total:
             RM <?= number_format($total, 2) ?>
         </h2>
+
 
         <div class="cart-actions">
 
@@ -190,11 +216,8 @@ page_header('Shopping Cart');
         </div>
 
     <?php endif; ?>
+
 </section>
 
 
-<?php
-
-page_footer();
-
-?>
+<?php include '../includes/footer.php'; ?>
