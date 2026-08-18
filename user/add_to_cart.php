@@ -1,8 +1,10 @@
 <?php
 
-require 'db_connect.php';
-require_login();
+session_start();
+require_once('../config/db_connection.php');
+require_once('../config/auth.php');
 
+require_login();
 
 // ==================================================
 // GET PRODUCT INFORMATION
@@ -27,21 +29,28 @@ if (!$quantity) {
     $quantity = 1;
 }
 
-
 // ==================================================
 // READ - CHECK PRODUCT STOCK
 // ==================================================
 
-$productQuery = $pdo->prepare(
-    'SELECT stock_quantity
+$productQuery = mysqli_prepare(
+    $conn,
+    "SELECT stock_quantity
      FROM products
-     WHERE product_id = ?'
+     WHERE product_id = ?"
 );
 
-$productQuery->execute([$productId]);
+mysqli_stmt_bind_param(
+    $productQuery,
+    "i",
+    $productId
+);
 
-$product = $productQuery->fetch();
+mysqli_stmt_execute($productQuery);
 
+$result = mysqli_stmt_get_result($productQuery);
+
+$product = mysqli_fetch_assoc($result);
 
 // Check whether the product exists
 // and whether enough stock is available.
@@ -78,7 +87,6 @@ $cartQuery->execute([
 
 $cartItem = $cartQuery->fetch();
 
-
 // ==================================================
 // UPDATE OR CREATE CART ITEM
 // ==================================================
@@ -93,14 +101,12 @@ if ($cartItem) {
         $cartItem['quantity'] + $quantity;
 
     if ($newQuantity > $product['stock_quantity']) {
-
         flash(
             'error',
             'Quantity cannot exceed available stock.'
         );
 
     } else {
-
         $updateCart = $pdo->prepare(
             'UPDATE cart
              SET quantity = quantity + ?
@@ -141,7 +147,6 @@ if ($cartItem) {
         'Product added to cart successfully.'
     );
 }
-
 
 // ==================================================
 // REDIRECT TO CART
