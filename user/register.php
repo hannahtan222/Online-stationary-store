@@ -1,7 +1,9 @@
 <?php
 
 session_start();
+
 require_once('../config/db_connection.php');
+require_once('../config/auth.php');
 
 // ==================================================
 // VARIABLES
@@ -28,6 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // ==============================================
 
     foreach ($fields as $key => $value) {
+
         $fields[$key] =
             trim($_POST[$key] ?? '');
     }
@@ -47,6 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         !$fields['email'] ||
         !$password
     ) {
+
         $errors[] =
             'Please complete all required fields.';
     }
@@ -58,16 +62,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             FILTER_VALIDATE_EMAIL
         )
     ) {
+
         $errors[] =
             'Please enter a valid email address.';
     }
 
     if (strlen($password) < 6) {
+
         $errors[] =
             'Password must be at least 6 characters.';
     }
 
     if ($password !== $confirmPassword) {
+
         $errors[] =
             'Passwords do not match.';
     }
@@ -77,9 +84,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // ==============================================
 
     if (!$errors) {
+
         $checkUser = mysqli_prepare(
             $conn,
-            "SELECT user_id FROM users WHERE username = ? OR email = ?"
+            "SELECT user_id
+             FROM users
+             WHERE username = ?
+             OR email = ?"
         );
 
         mysqli_stmt_bind_param(
@@ -90,59 +101,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         );
 
         mysqli_stmt_execute($checkUser);
-        
-        $result = mysqli_stmt_get_result($checkUser);
-        
-        if (mysqli_fetch_assoc($result)) {
-            $errors[] = 'That username or email is already registered.';
-}
+
+        $result =
+            mysqli_stmt_get_result($checkUser);
+
+        $existingUser =
+            mysqli_fetch_assoc($result);
+
+
+        if ($existingUser) {
+
+            $errors[] =
+                'That username or email is already registered.';
+
         } else {
+
             // ======================================
             // CREATE - REGISTER NEW USER
             // ======================================
 
-            // Hash the password before saving it.
-            $hashedPassword =
+            // Hash password before saving it.
+            $passwordHash =
                 password_hash(
                     $password,
                     PASSWORD_DEFAULT
                 );
 
-           $createUser = mysqli_prepare(
-               $conn,
-               "INSERT INTO users
-               (username, email, password, full_name, address, phone)
-               VALUES (?, ?, ?, ?, ?, ?)"
-           );
-        
-        $passwordHash = password_hash($password, PASSWORD_DEFAULT);
-        mysqli_stmt_bind_param(
-            $createUser,
-            "ssssss",
-            $fields['username'],
-            $fields['email'],
-            $passwordHash,
-            $fields['full_name'],
-            $fields['address'],
-            $fields['phone']
-        );
-        
-        mysqli_stmt_execute($createUser);
-        
-            $createUser->execute([
+            $createUser = mysqli_prepare(
+                $conn,
+                "INSERT INTO users
+                (
+                    username,
+                    email,
+                    password,
+                    full_name,
+                    address,
+                    phone
+                )
+                VALUES (?, ?, ?, ?, ?, ?)"
+            );
 
+            mysqli_stmt_bind_param(
+                $createUser,
+                "ssssss",
                 $fields['username'],
-
                 $fields['email'],
-
-                $hashedPassword,
-
+                $passwordHash,
                 $fields['full_name'],
-
                 $fields['address'],
-
                 $fields['phone']
-            ]);
+            );
+
+            mysqli_stmt_execute($createUser);
 
             flash(
                 'success',
@@ -153,7 +163,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
+// ==================================================
+// DISPLAY REGISTRATION PAGE
+// ==================================================
+
 include '../includes/header.php';
+
 ?>
 
 <section class="form-card">
@@ -167,10 +183,16 @@ include '../includes/header.php';
     <?php foreach ($errors as $error): ?>
 
         <div class="message error">
+
             <?= e($error) ?>
+
         </div>
 
     <?php endforeach; ?>
+
+    <!-- ==========================================
+         REGISTRATION FORM
+    =========================================== -->
 
     <form method="post">
 
