@@ -1,8 +1,10 @@
 <?php
-
+//logout.php
 session_start();
 
 require_once('../config/db_connection.php');
+
+<link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/user_style.css">
 
 // ==================================================
 // LOGOUT

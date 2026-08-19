@@ -1,11 +1,13 @@
 <?php
-// modules/member3_user/profile.php
+//profile.php
 session_start();
 
 // Include BOTH config files
 require_once '../includes/config.php';        // For BASE_URL
 require_once '../config/db_connection.php';   // For database connection
 require_once '../config/auth.php';            // For authentication functions
+
+<link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/user_style.css">
 
 // Require user to be logged in
 require_login();
