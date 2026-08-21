@@ -7,8 +7,6 @@ require_once '../includes/config.php';        // For BASE_URL
 require_once '../config/db_connection.php';   // For database connection
 require_once '../config/auth.php';            // For authentication functions
 
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/user_style.css">
-
 // ==================================================
 // VARIABLES
 // ==================================================
@@ -138,7 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register - Stationery Store</title>
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/user_style.css">
     <style>
         .form-card {
             max-width: 600px;

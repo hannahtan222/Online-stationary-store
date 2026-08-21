@@ -36,7 +36,7 @@ $product_count = mysqli_fetch_assoc($product_result)['total'];
             Discover quality stationery for school, university,
             office and creative projects.
         </p>
-        <a href="products.php" class="btn btn-primary">Shop Now</a>
+        <a href="product_module/products.php" class="btn btn-primary">Shop Now</a>
     </div>
 </section>
 

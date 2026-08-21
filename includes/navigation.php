@@ -6,8 +6,8 @@ require_once 'config.php';
 <nav>
     <ul class="nav-menu">
         <li><a href="<?php echo BASE_URL; ?>index.php">Home</a></li>
-        <li><a href="<?php echo BASE_URL; ?>products.php">Products</a></li>
-        <li><a href="<?php echo BASE_URL; ?>cart.php">Cart</a></li>
+        <li><a href="<?php echo BASE_URL; ?>product_module/products.php">Products</a></li>
+        <li><a href="<?php echo BASE_URL; ?>user/cart.php">Cart</a></li>
         <li><a href="<?php echo BASE_URL; ?>front-end/contact.php">Contact</a></li>
         
         <?php if(isset($_SESSION['user_id'])): ?>

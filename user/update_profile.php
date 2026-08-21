@@ -5,7 +5,7 @@ session_start();
 require_once('../config/db_connection.php');
 require_once('../config/auth.php');
 
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/user_style.css">
+/*<link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/user_style.css">*/
 
 require_login();
 

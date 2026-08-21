@@ -1,10 +1,11 @@
 <?php
-//logout.php
+// modules/member3_user/logout.php
 session_start();
 
-require_once('../config/db_connection.php');
-
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/user_style.css">
+// Include config files
+require_once '../includes/config.php';
+require_once '../config/db_connection.php';
+require_once '../config/auth.php';
 
 // ==================================================
 // LOGOUT
@@ -20,13 +21,23 @@ session_destroy();
 // display the logout confirmation message.
 session_start();
 
-// Display success message.
-flash(
-    'success',
-    'You have been logged out.'
-);
-
-// Redirect user to login page.
-redirect('login.php');
-
+// Store flash message
+flash('success', 'You have been logged out.');
 ?>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logout - Stationery Store</title>
+</head>
+<body>
+    <script>
+        // Show alert popup
+        alert('✅ You have been successfully logged out!');
+        
+        // Redirect to login page
+        window.location.href = 'login.php';
+    </script>
+</body>
+</html>
