@@ -11,7 +11,7 @@ $product_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $product = null;
 
 if ($product_id > 0) {
-    $sql = "SELECT p.product_id, p.product_name, p.description, p.price, p.image_url as image,
+    $sql = "SELECT p.product_id, p.product_name, p.description, p.price, p.stock_quantity, p.image_url as image,
                    c.category_name
             FROM products p
             LEFT JOIN categories c ON p.category_id = c.category_id
@@ -227,17 +227,33 @@ if ($product_id > 0) {
                 <div class="product-detail-price">
                     RM <?php echo number_format((float)$product['price'], 2); ?>
                 </div>
+				
+				  <?php 
+                $stock = (int)$product['stock_quantity'];
+                if ($stock > 10): 
+                ?>
+                    <span class="product-stock in-stock">✅ In Stock (<?php echo $stock; ?> units)</span>
+                <?php elseif ($stock > 0 && $stock <= 10): ?>
+                    <span class="product-stock low-stock">⚠️ Low Stock (<?php echo $stock; ?> units left)</span>
+                <?php else: ?>
+                    <span class="product-stock out-of-stock">❌ Out of Stock</span>
+                <?php endif; ?>
 
                 <h3>Description</h3>
                 <p class="product-description">
                     <?php echo nl2br(htmlspecialchars($product['description'] ?? 'No description available.')); ?>
                 </p>
 
-                <!-- Member 3 can connect this link to the final cart/session function. -->
-                <a href="<?php echo BASE_URL; ?>user/cart.php?add=<?php echo (int)$product['product_id']; ?>"
-                   class="product-btn product-add-cart">
-                    Add to Cart
-                </a>
+                 <?php if ($stock > 0): ?>
+                    <a href="<?php echo BASE_URL; ?>user/add_to_cart.php?add=<?php echo (int)$product['product_id']; ?>"
+                       class="product-btn product-add-cart">
+                        🛒 Add to Cart
+                    </a>
+                <?php else: ?>
+                    <button class="product-btn product-add-cart disabled" disabled>
+                        ❌ Out of Stock
+                    </button>
+                <?php endif; ?>
             </div>
 
         </div>

@@ -198,6 +198,7 @@ if (!$user) {
     <div class="profile-actions">
         <a href="update_profile.php" class="btn-secondary">✏️ Edit Profile</a>
         <a href="cart.php" class="btn-secondary">🛒 View Cart</a>
+		<a href="order_history.php" class="btn-secondary">Order History</a>
         <a href="logout.php" class="btn-danger">🚪 Logout</a>
     </div>
 </section>

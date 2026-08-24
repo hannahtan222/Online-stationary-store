@@ -142,3 +142,36 @@ CREATE TABLE order_items (
     FOREIGN KEY (product_id)
         REFERENCES products(product_id)
 );
+
+-- ==================================================
+-- CREATE CONTACT MESSAGES TABLE
+-- ==================================================
+
+CREATE TABLE IF NOT EXISTS contact_messages (
+    message_id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    message TEXT NOT NULL,
+    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status ENUM('unread', 'read', 'replied') DEFAULT 'unread',
+    admin_notes TEXT NULL
+);
+
+-- ==================================================
+-- OPTIONAL: ADD INDEXES FOR BETTER PERFORMANCE
+-- ==================================================
+
+ALTER TABLE contact_messages ADD INDEX idx_email (email);
+ALTER TABLE contact_messages ADD INDEX idx_status (status);
+ALTER TABLE contact_messages ADD INDEX idx_submitted_at (submitted_at);
+
+-- ==================================================
+-- SAMPLE INSERT DATA (OPTIONAL)
+-- ==================================================
+
+INSERT INTO contact_messages (name, email, message, status) VALUES
+('John Doe', 'john@example.com', 'I love your stationery products! Do you have any discounts for students?', 'read'),
+('Jane Smith', 'jane@example.com', 'When will the new notebooks be in stock?', 'unread'),
+('Ahmad Bin Abdullah', 'ahmad@example.com', 'I want to return an item. What is the return policy?', 'replied'),
+('Siti Nurhaliza', 'siti@example.com', 'Your website is very user-friendly. Keep up the good work!', 'unread'),
+('Tan Wei Ming', 'tan@example.com', 'Do you offer international shipping to Singapore?', 'read');

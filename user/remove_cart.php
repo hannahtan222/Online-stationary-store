@@ -1,11 +1,11 @@
 <?php
-//remove_cart.php
+// modules/member3_user/remove_cart.php
 session_start();
 
-require_once('../config/db_connection.php');
-require_once('../config/auth.php');
-
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/user_style.css">
+// Include BOTH config files - FIXED PATHS
+require_once '../includes/config.php';        // For BASE_URL
+require_once '../config/db_connection.php';   // For database connection
+require_once '../config/auth.php';            // For authentication functions
 
 require_login();
 
@@ -46,12 +46,27 @@ if ($cartId) {
 
     flash(
         'success',
-        'Product removed from cart.'
+        'Product removed from cart successfully.'
     );
 }
 
 // ==================================================
-// REDIRECT TO CART
+// REDIRECT TO CART - FIXED
 // ==================================================
 
-redirect('cart.php');
+redirect(BASE_URL . 'user/cart.php');
+exit();
+?>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remove from Cart - Stationery Store</title>
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/user_style.css">
+</head>
+<body>
+    <p>Removing item from cart...</p>
+</body>
+</html>

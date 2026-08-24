@@ -20,6 +20,10 @@ $order_count = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total 
 // Get user count
 $user_count = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM users"))['total'];
 
+// Get contact messages count
+$contact_count = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM contact_messages"))['total'];
+$unread_contact_count = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM contact_messages WHERE status = 'unread'"))['total'];
+
 // Get recent orders (for display)
 $recent_orders_query = "SELECT o.*, u.username 
                         FROM orders o 
@@ -89,6 +93,16 @@ $low_stock = mysqli_query($conn, $low_stock_query);
         .status-badge.completed { background: #d1fae5; color: #065f46; }
         .status-badge.shipped { background: #dbeafe; color: #1e40af; }
         .status-badge.cancelled { background: #fee2e2; color: #991b1b; }
+		
+		 .message-status {
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .message-status.unread { background: #fee2e2; color: #991b1b; }
+        .message-status.read { background: #dbeafe; color: #1e40af; }
+        .message-status.replied { background: #d1fae5; color: #065f46; }
         
         .low-stock-warning {
             color: #dc2626;
@@ -136,6 +150,44 @@ $low_stock = mysqli_query($conn, $low_stock_query);
         .btn-logout:hover {
             background: #fecaca;
         }
+		
+		.message-preview {
+            max-width: 150px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #666;
+            font-size: 13px;
+        }
+        
+        .message-sender {
+            font-weight: 500;
+            color: #1a1a2e;
+        }
+        
+        .stat-box.contact-stat {
+            border-left-color: #8B5CF6;
+        }
+		
+		.stat-box.contact-stat .stat-icon {
+            color: #8B5CF6;
+        }
+        .stat-box.contact-stat .stat-link {
+            color: #8B5CF6;
+        }
+        .stat-box.contact-stat .stat-link:hover {
+            color: #7C3AED;
+        }
+		
+		 .unread-badge {
+            background: #dc2626;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 8px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-left: 5px;
+        }
         
         @media (max-width: 768px) {
             .dashboard-grid {
@@ -169,7 +221,7 @@ $low_stock = mysqli_query($conn, $low_stock_query);
             <span class="stat-icon">📦</span>
             <h3>Total Products</h3>
             <p class="stat-number"><?php echo $product_count; ?></p>
-            <a href="manage_products.php" class="stat-link">Manage Products →</a>
+            <a href="manage_product.php" class="stat-link">Manage Products →</a>
         </div>
         
         <div class="stat-box">
@@ -185,12 +237,24 @@ $low_stock = mysqli_query($conn, $low_stock_query);
             <p class="stat-number"><?php echo $order_count; ?></p>
             <a href="manage_orders.php" class="stat-link">View Orders →</a>
         </div>
-        
+		
+		<div class="stat-box contact-stat">
+            <span class="stat-icon">📩</span>
+            <h3>Contact Messages</h3>
+            <p class="stat-number">
+                <?php echo $contact_count; ?>
+                <?php if ($unread_contact_count > 0): ?>
+                    <span class="unread-badge"><?php echo $unread_contact_count; ?> new</span>
+                <?php endif; ?>
+            </p>
+            <a href="manage_messages.php" class="stat-link">View Messages →</a>
+        </div>
+		
         <div class="stat-box">
             <span class="stat-icon">👤</span>
             <h3>Users</h3>
             <p class="stat-number"><?php echo $user_count; ?></p>
-            <a href="#" class="stat-link">Manage Users →</a>
+            <a href="manage_users.php" class="stat-link">Manage Users →</a>
         </div>
     </div>
     
@@ -241,7 +305,7 @@ $low_stock = mysqli_query($conn, $low_stock_query);
                     <?php endwhile; ?>
                 </ul>
                 <div style="margin-top: 15px; text-align: right;">
-                    <a href="manage_products.php" style="color: #4A90D9; text-decoration: none; font-weight: 500;">Manage Products →</a>
+                    <a href="manage_product.php" style="color: #4A90D9; text-decoration: none; font-weight: 500;">Manage Products →</a>
                 </div>
             <?php else: ?>
                 <p style="color: #10B981; text-align: center; padding: 20px;">✅ All products are well stocked!</p>

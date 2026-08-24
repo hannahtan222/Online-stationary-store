@@ -1,12 +1,13 @@
 <?php
-//add_to_cart.php
+// modules/member3_user/add_to_cart.php
 session_start();
 
-require_once('../config/db_connection.php');
-require_once('../config/auth.php');
+// Include BOTH config files
+require_once '../includes/config.php';        // For BASE_URL
+require_once '../config/db_connection.php';   // For database connection
+require_once '../config/auth.php';            // For authentication functions
 
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/user_style.css">
-
+// Require user to be logged in
 require_login();
 
 // ==================================================
@@ -14,20 +15,21 @@ require_login();
 // ==================================================
 
 // Get product ID submitted by the user.
-$productId = filter_input(
-    INPUT_POST,
-    'product_id',
-    FILTER_VALIDATE_INT
-);
+$productId = filter_input(INPUT_GET, 'add', FILTER_VALIDATE_INT);
+if (!$productId) {
+    $productId = filter_input(INPUT_POST, 'product_id', FILTER_VALIDATE_INT);
+}
+
+// If still no product ID, redirect to products
+if (!$productId) {
+    flash('error', 'No product selected.');
+    redirect(BASE_URL . 'modules/member2_products/products.php');
+    exit();
+}
 
 // Get quantity submitted by the user.
 // If no quantity is provided, use 1.
-$quantity = filter_input(
-    INPUT_POST,
-    'quantity',
-    FILTER_VALIDATE_INT
-);
-
+$quantity = filter_input(INPUT_POST, 'quantity', FILTER_VALIDATE_INT);
 if (!$quantity) {
     $quantity = 1;
 }
@@ -50,11 +52,8 @@ mysqli_stmt_bind_param(
 );
 
 mysqli_stmt_execute($productQuery);
-
 $result = mysqli_stmt_get_result($productQuery);
-
 $product = mysqli_fetch_assoc($result);
-
 
 // Check whether the product exists
 // and whether enough stock is available.
@@ -68,7 +67,7 @@ if (
         'This product is unavailable in that quantity.'
     );
 
-    redirect('products.php');
+    redirect(BASE_URL . 'product_module/products.php');
 }
 
 // ==================================================
@@ -91,9 +90,7 @@ mysqli_stmt_bind_param(
 );
 
 mysqli_stmt_execute($cartQuery);
-
 $result = mysqli_stmt_get_result($cartQuery);
-
 $cartItem = mysqli_fetch_assoc($result);
 
 // ==================================================
@@ -106,8 +103,7 @@ if ($cartItem) {
     // UPDATE - INCREASE EXISTING CART QUANTITY
     // ==============================================
 
-    $newQuantity =
-        $cartItem['quantity'] + $quantity;
+    $newQuantity = $cartItem['quantity'] + $quantity;
 
     if ($newQuantity > $product['stock_quantity']) {
 
@@ -174,3 +170,18 @@ if ($cartItem) {
 // ==================================================
 
 redirect('cart.php');
+?>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add to Cart - Stationery Store</title>
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/user_style.css">
+</head>
+<body>
+    <!-- This page redirects immediately -->
+    <p>Redirecting to cart...</p>
+</body>
+</html>

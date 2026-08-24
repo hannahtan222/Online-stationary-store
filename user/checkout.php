@@ -1,11 +1,11 @@
 <?php
-//checkout.php
+// modules/member3_user/checkout.php
 session_start();
 
-require_once('../config/db_connection.php');
-require_once('../config/auth.php');
-
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/user_style.css">
+// Include BOTH config files - FIXED PATHS
+require_once '../includes/config.php';        // For BASE_URL
+require_once '../config/db_connection.php';   // For database connection
+require_once '../config/auth.php';            // For authentication functions
 
 require_login();
 
@@ -34,13 +34,15 @@ mysqli_stmt_bind_param(
 );
 
 mysqli_stmt_execute($cartQuery);
-
 $result = mysqli_stmt_get_result($cartQuery);
+$items = mysqli_fetch_all($result, MYSQLI_ASSOC);
 
-$items = mysqli_fetch_all(
-    $result,
-    MYSQLI_ASSOC
-);
+// Redirect to cart if empty
+if (empty($items)) {
+    flash('error', 'Your cart is empty.');
+    redirect(BASE_URL . 'modules/member3_user/cart.php');
+    exit();
+}
 
 // ==================================================
 // READ - RETRIEVE CUSTOMER INFORMATION
@@ -62,9 +64,7 @@ mysqli_stmt_bind_param(
 );
 
 mysqli_stmt_execute($userQuery);
-
 $result = mysqli_stmt_get_result($userQuery);
-
 $user = mysqli_fetch_assoc($result);
 
 // ==================================================
@@ -86,28 +86,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         foreach ($items as $item) {
 
-            if (
-                $item['quantity'] >
-                $item['stock_quantity']
-            ) {
+            if ($item['quantity'] > $item['stock_quantity']) {
 
                 throw new RuntimeException(
-                    'Insufficient stock for ' .
-                    $item['product_name']
+                    'Insufficient stock for ' . $item['product_name']
                 );
             }
 
-            $total +=
-                $item['price'] *
-                $item['quantity'];
+            $total += $item['price'] * $item['quantity'];
         }
 
         // ==========================================
         // GET SHIPPING ADDRESS
         // ==========================================
 
-        $shippingAddress =
-            trim($_POST['shipping_address'] ?? '');
+        $shippingAddress = trim($_POST['shipping_address'] ?? '');
+
+        if (empty($shippingAddress)) {
+            throw new RuntimeException('Please enter a shipping address.');
+        }
 
         // ==========================================
         // CREATE - CREATE NEW ORDER
@@ -119,9 +116,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             (
                 user_id,
                 total_amount,
-                shipping_address
+                shipping_address,
+                status
             )
-            VALUES (?, ?, ?)"
+            VALUES (?, ?, ?, 'Pending')"
         );
 
         mysqli_stmt_bind_param(
@@ -159,8 +157,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $reduceStock = mysqli_prepare(
             $conn,
             "UPDATE products
-             SET stock_quantity =
-                 stock_quantity - ?
+             SET stock_quantity = stock_quantity - ?
              WHERE product_id = ?"
         );
 
@@ -177,7 +174,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
 
             mysqli_stmt_execute($createOrderItem);
-
 
             // Reduce product stock.
             mysqli_stmt_bind_param(
@@ -213,10 +209,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         flash(
             'success',
-            'Your order has been placed successfully.'
+            'Your order has been placed successfully! Order #' . $orderId
         );
 
-        redirect('order_history.php');
+        redirect(BASE_URL . 'user/order_history.php');
 
     } catch (Throwable $error) {
 
@@ -225,51 +221,234 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         flash(
             'error',
-            'Order could not be placed.'
+            $error->getMessage() ?: 'Order could not be placed. Please try again.'
         );
 
-        redirect('cart.php');
+        redirect(BASE_URL . 'user/cart.php');
     }
 }
-
-// ==================================================
-// DISPLAY CHECKOUT PAGE
-// ==================================================
-
-include '../includes/header.php';
-
 ?>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Stationery Store</title>
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/user_style.css">
+    <style>
+        .checkout-container {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        .checkout-container h1 {
+            text-align: center;
+            font-size: 32px;
+            color: #1a1a2e;
+            margin-bottom: 30px;
+        }
+        .checkout-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px 35px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+        }
+        .checkout-card h2 {
+            font-size: 20px;
+            color: #1a1a2e;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f2f5;
+        }
+        .checkout-card .customer-name {
+            font-size: 18px;
+            color: #1a1a2e;
+            margin-bottom: 5px;
+        }
+        .checkout-card .customer-email {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .checkout-card .order-summary {
+            margin: 20px 0;
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .checkout-card .order-summary table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .checkout-card .order-summary th {
+            text-align: left;
+            padding: 8px 10px;
+            font-size: 13px;
+            color: #888;
+            font-weight: 600;
+            border-bottom: 1px solid #e8ecf1;
+        }
+        .checkout-card .order-summary td {
+            padding: 10px 10px;
+            border-bottom: 1px solid #f0f2f5;
+            font-size: 14px;
+        }
+        .checkout-card .order-summary .total-row {
+            font-weight: 700;
+            font-size: 16px;
+            color: #1a1a2e;
+        }
+        .checkout-card .order-summary .total-row td {
+            border-bottom: none;
+            padding-top: 15px;
+        }
+        .checkout-card label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #444;
+        }
+        .checkout-card textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e8ecf1;
+            border-radius: 8px;
+            font-size: 15px;
+            resize: vertical;
+            min-height: 100px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+        .checkout-card textarea:focus {
+            border-color: #4A90D9;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(74, 144, 217, 0.15);
+        }
+        .checkout-card .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background: #4A90D9;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .checkout-card .btn-submit:hover {
+            background: #357ABD;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(74, 144, 217, 0.35);
+        }
+        .checkout-card .btn-submit:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .checkout-card .empty-cart {
+            text-align: center;
+            padding: 40px 20px;
+            color: #888;
+        }
+        .checkout-card .empty-cart h2 {
+            border-bottom: none;
+            color: #333;
+        }
+        .checkout-card .back-link {
+            display: inline-block;
+            margin-top: 15px;
+            color: #4A90D9;
+            text-decoration: none;
+        }
+        .checkout-card .back-link:hover {
+            text-decoration: underline;
+        }
+        @media (max-width: 600px) {
+            .checkout-card {
+                padding: 20px;
+            }
+            .checkout-card .order-summary {
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
 
-<section class="card">
+<?php include '../includes/header.php'; ?>
 
-    <h1>Checkout</h1>
+<section class="checkout-container">
 
-    <h2>
-        Customer Information
-    </h2>
+    <h1>🛒 Checkout</h1>
 
-    <p>
-        <strong>
-            <?= e($user['full_name']) ?>
-        </strong>
-    </p>
+    <div class="checkout-card">
 
-    <form method="post">
+        <?php if (empty($items)): ?>
+            <div class="empty-cart">
+                <h2>Your cart is empty</h2>
+                <p>Add some products before checking out.</p>
+                <a href="<?php echo BASE_URL; ?>product_module/products.php" class="back-link">← Continue Shopping</a>
+            </div>
+        <?php else: ?>
 
-        <label>
-            Shipping Address
+            <h2>Customer Information</h2>
+            <p class="customer-name"><strong><?php echo htmlspecialchars($user['full_name'] ?? 'Customer'); ?></strong></p>
+            <p class="customer-email"><?php echo htmlspecialchars($_SESSION['email'] ?? ''); ?></p>
 
-            <textarea
-                name="shipping_address"
-                required
-            ><?= e($user['address']) ?></textarea>
+            <h2 style="margin-top: 25px;">Order Summary</h2>
+            <div class="order-summary">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th style="text-align: center;">Qty</th>
+                            <th style="text-align: right;">Price</th>
+                            <th style="text-align: right;">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php 
+                        $subtotal = 0;
+                        foreach ($items as $item): 
+                            $item_total = $item['price'] * $item['quantity'];
+                            $subtotal += $item_total;
+                        ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($item['product_name']); ?></td>
+                                <td style="text-align: center;"><?php echo $item['quantity']; ?></td>
+                                <td style="text-align: right;">RM <?php echo number_format($item['price'], 2); ?></td>
+                                <td style="text-align: right;">RM <?php echo number_format($item_total, 2); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                        <tr class="total-row">
+                            <td colspan="3" style="text-align: right;">Total:</td>
+                            <td style="text-align: right;">RM <?php echo number_format($subtotal, 2); ?></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
-        </label>
+            <form method="POST" action="">
+                <label for="shipping_address">Shipping Address <span style="color: #dc2626;">*</span></label>
+                <textarea 
+                    name="shipping_address" 
+                    id="shipping_address" 
+                    required
+                    placeholder="Enter your full shipping address"><?php echo htmlspecialchars($user['address'] ?? ''); ?></textarea>
 
-        <button type="submit">
-            Confirm Order
-        </button>
-    </form>
+                <button type="submit" class="btn-submit">✅ Confirm Order</button>
+            </form>
+
+        <?php endif; ?>
+
+    </div>
+
 </section>
 
 <?php include '../includes/footer.php'; ?>
+
+</body>
+</html>

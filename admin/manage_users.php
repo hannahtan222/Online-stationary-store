@@ -1,5 +1,5 @@
 <?php
-// admin/manage_orders.php
+// admin/manage_users.php
 session_start();
 
 // Check if admin is logged in
@@ -14,79 +14,76 @@ require_once '../config/db_connection.php';   // For database connection
 
 $error = '';
 $success = '';
-$view_order = null;
-$order_items = [];
+$view_user = null;
 
-// Handle Order Status Update
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
-    $order_id = (int)$_POST['order_id'];
-    $status = mysqli_real_escape_string($conn, $_POST['status']);
-    
-    $valid_statuses = ['Pending', 'Processing', 'Shipped', 'Completed', 'Cancelled'];
-    if (!in_array($status, $valid_statuses)) {
-        $error = 'Invalid status!';
-    } else {
-        $update_query = "UPDATE orders SET status = '$status' WHERE order_id = $order_id";
-        if (mysqli_query($conn, $update_query)) {
-            $success = "Order #$order_id status updated to '$status'!";
-        } else {
-            $error = 'Error: ' . mysqli_error($conn);
-        }
-    }
-}
-
-// Handle View Order Details
-if (isset($_GET['view']) && !empty($_GET['view'])) {
-    $order_id = (int)$_GET['view'];
-    $view_query = "SELECT o.*, u.username, u.email, u.full_name, u.address, u.phone 
-                   FROM orders o 
-                   JOIN users u ON o.user_id = u.user_id 
-                   WHERE o.order_id = $order_id";
-    $view_result = mysqli_query($conn, $view_query);
-    if ($view_order = mysqli_fetch_assoc($view_result)) {
-        // Fetch order items
-        $items_query = "SELECT oi.*, p.product_name, p.image_url 
-                        FROM order_items oi 
-                        JOIN products p ON oi.product_id = p.product_id 
-                        WHERE oi.order_id = $order_id";
-        $items_result = mysqli_query($conn, $items_query);
-        while ($item = mysqli_fetch_assoc($items_result)) {
-            $order_items[] = $item;
-        }
-    }
-}
-
-// Handle Delete Order
+// Handle Delete User
 if (isset($_GET['delete']) && !empty($_GET['delete'])) {
-    $order_id = (int)$_GET['delete'];
+    $user_id = (int)$_GET['delete'];
     
-    // Delete order items first (foreign key constraint)
-    $delete_items = "DELETE FROM order_items WHERE order_id = $order_id";
-    mysqli_query($conn, $delete_items);
+    // Check if user has orders
+    $check_query = "SELECT COUNT(*) as count FROM orders WHERE user_id = $user_id";
+    $check_result = mysqli_query($conn, $check_query);
+    $count = mysqli_fetch_assoc($check_result)['count'];
     
-    // Delete order
-    $delete_order = "DELETE FROM orders WHERE order_id = $order_id";
-    if (mysqli_query($conn, $delete_order)) {
-        $success = "Order #$order_id deleted successfully!";
+    if ($count > 0) {
+        $error = "Cannot delete this user because they have $count order(s)!";
     } else {
-        $error = 'Error: ' . mysqli_error($conn);
+        // Delete user
+        $delete_query = "DELETE FROM users WHERE user_id = $user_id";
+        if (mysqli_query($conn, $delete_query)) {
+            $success = "User deleted successfully!";
+        } else {
+            $error = "Error: " . mysqli_error($conn);
+        }
     }
 }
 
-// Get all orders with user info
-$sql = "SELECT o.*, u.username, u.email 
-        FROM orders o 
-        JOIN users u ON o.user_id = u.user_id 
-        ORDER BY o.order_date DESC";
-$orders = mysqli_query($conn, $sql);
-$total_orders = mysqli_num_rows($orders);
+// Handle View User Details
+if (isset($_GET['view']) && !empty($_GET['view'])) {
+    $user_id = (int)$_GET['view'];
+    $view_query = "SELECT * FROM users WHERE user_id = $user_id";
+    $view_result = mysqli_query($conn, $view_query);
+    if ($view_user = mysqli_fetch_assoc($view_result)) {
+        // Get order count for this user
+        $order_count_query = "SELECT COUNT(*) as total FROM orders WHERE user_id = $user_id";
+        $order_result = mysqli_query($conn, $order_count_query);
+        $view_user['order_count'] = mysqli_fetch_assoc($order_result)['total'];
+        
+        // Get cart items count for this user
+        $cart_count_query = "SELECT COUNT(*) as total FROM cart WHERE user_id = $user_id";
+        $cart_result = mysqli_query($conn, $cart_count_query);
+        $view_user['cart_count'] = mysqli_fetch_assoc($cart_result)['total'];
+    }
+}
+
+// Handle User Role Update (Promote/Demote)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_role'])) {
+    $user_id = (int)$_POST['user_id'];
+    $role = mysqli_real_escape_string($conn, $_POST['role']);
+    
+    $update_query = "UPDATE users SET role = '$role' WHERE user_id = $user_id";
+    if (mysqli_query($conn, $update_query)) {
+        $success = "User role updated successfully!";
+    } else {
+        $error = "Error: " . mysqli_error($conn);
+    }
+}
+
+// Get all users
+$sql = "SELECT u.*, 
+        (SELECT COUNT(*) FROM orders WHERE user_id = u.user_id) as order_count,
+        (SELECT COUNT(*) FROM cart WHERE user_id = u.user_id) as cart_count
+        FROM users u 
+        ORDER BY u.created_at DESC";
+$users = mysqli_query($conn, $sql);
+$total_users = mysqli_num_rows($users);
 ?>
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Orders - Admin Panel</title>
+    <title>Manage Users - Admin Panel</title>
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/admin_style.css">
     <style>
         .manage-container {
@@ -192,32 +189,37 @@ $total_orders = mysqli_num_rows($orders);
         table tbody tr:hover {
             background: #fafbfc;
         }
-        .status-badge {
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #4A90D9;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+        }
+        .user-avatar.green { background: #10B981; }
+        .user-avatar.orange { background: #F59E0B; }
+        .user-avatar.purple { background: #8B5CF6; }
+        .user-avatar.red { background: #EF4444; }
+        .user-avatar.pink { background: #EC4899; }
+        .role-badge {
             display: inline-block;
-            padding: 4px 14px;
+            padding: 3px 12px;
             border-radius: 20px;
             font-size: 12px;
             font-weight: 600;
         }
-        .status-pending {
-            background: #fef3c7;
-            color: #d97706;
-        }
-        .status-processing {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-        .status-shipped {
-            background: #e0e7ff;
-            color: #3730a3;
-        }
-        .status-completed {
-            background: #d1fae5;
-            color: #065f46;
-        }
-        .status-cancelled {
+        .role-admin {
             background: #fee2e2;
             color: #991b1b;
+        }
+        .role-user {
+            background: #dbeafe;
+            color: #1e40af;
         }
         table .actions {
             display: flex;
@@ -253,9 +255,6 @@ $total_orders = mysqli_num_rows($orders);
             border: none;
             cursor: pointer;
         }
-        table .btn-delete:hover {
-            background: #fecaca;
-        }
         table .btn-status {
             padding: 4px 12px;
             background: #4A90D9;
@@ -269,6 +268,18 @@ $total_orders = mysqli_num_rows($orders);
         }
         table .btn-status:hover {
             background: #357ABD;
+        }
+        table .btn-status.promote {
+            background: #10B981;
+        }
+        table .btn-status.promote:hover {
+            background: #059669;
+        }
+        table .btn-status.demote {
+            background: #F59E0B;
+        }
+        table .btn-status.demote:hover {
+            background: #D97706;
         }
         .error-message {
             background: #fee2e2;
@@ -302,10 +313,6 @@ $total_orders = mysqli_num_rows($orders);
             color: #333;
             margin-bottom: 8px;
         }
-        .order-total {
-            font-weight: 700;
-            color: #4A90D9;
-        }
 
         /* Modal/View Details */
         .modal-overlay {
@@ -323,7 +330,7 @@ $total_orders = mysqli_num_rows($orders);
         .modal-content {
             background: white;
             border-radius: 12px;
-            max-width: 700px;
+            max-width: 600px;
             width: 95%;
             max-height: 90vh;
             overflow-y: auto;
@@ -352,50 +359,44 @@ $total_orders = mysqli_num_rows($orders);
         .modal-content .modal-header .close-btn:hover {
             color: #333;
         }
-        .order-detail-row {
+        .user-detail-row {
             display: flex;
             padding: 8px 0;
             border-bottom: 1px solid #f8fafc;
         }
-        .order-detail-row .label {
+        .user-detail-row .label {
             font-weight: 600;
-            width: 150px;
+            width: 130px;
             color: #555;
             flex-shrink: 0;
         }
-        .order-detail-row .value {
+        .user-detail-row .value {
             flex: 1;
             color: #1a1a2e;
         }
-        .order-items-table {
-            width: 100%;
+        .user-detail-row .value .role-badge {
+            display: inline-block;
+        }
+        .user-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
             margin-top: 15px;
-            border-collapse: collapse;
         }
-        .order-items-table th {
+        .user-stats .stat-item {
             background: #f8fafc;
-            padding: 10px 12px;
-            text-align: left;
-            font-size: 13px;
-            color: #555;
-        }
-        .order-items-table td {
-            padding: 10px 12px;
-            border-bottom: 1px solid #f0f2f5;
-            font-size: 14px;
-        }
-        .order-total-display {
-            text-align: right;
             padding: 15px;
-            background: #f8fafc;
             border-radius: 8px;
-            margin-top: 10px;
-            font-size: 20px;
-            font-weight: 700;
-            color: #1a1a2e;
+            text-align: center;
         }
-        .order-total-display span {
+        .user-stats .stat-item .stat-number {
+            font-size: 28px;
+            font-weight: 700;
             color: #4A90D9;
+        }
+        .user-stats .stat-item .stat-label {
+            font-size: 13px;
+            color: #888;
         }
         @media (max-width: 768px) {
             .manage-header {
@@ -417,12 +418,15 @@ $total_orders = mysqli_num_rows($orders);
             .modal-content {
                 padding: 20px;
             }
-            .order-detail-row {
+            .user-detail-row {
                 flex-direction: column;
             }
-            .order-detail-row .label {
+            .user-detail-row .label {
                 width: 100%;
                 margin-bottom: 3px;
+            }
+            .user-stats {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -432,7 +436,7 @@ $total_orders = mysqli_num_rows($orders);
 <div class="manage-container">
     <!-- Header -->
     <div class="manage-header">
-        <h1>📦 Manage Orders</h1>
+        <h1>👥 Manage Users</h1>
         <div class="admin-info">
             <span>Welcome, <strong><?php echo $_SESSION['admin_username'] ?? 'Admin'; ?></strong></span>
             <a href="logout.php" class="btn-logout">Logout</a>
@@ -447,57 +451,56 @@ $total_orders = mysqli_num_rows($orders);
         <div class="success-message"><?php echo $success; ?></div>
     <?php endif; ?>
 
-    <!-- Orders Table -->
+    <!-- Users Table -->
     <div class="table-container">
         <div class="table-header">
-            <h2>All Orders</h2>
-            <div class="count">Total: <?php echo $total_orders; ?> orders</div>
+            <h2>All Users</h2>
+            <div class="count">Total: <?php echo $total_users; ?> users</div>
         </div>
 
-        <?php if ($total_orders > 0): ?>
+        <?php if ($total_users > 0): ?>
             <div class="table-wrapper">
                 <table>
                     <thead>
                         <tr>
-                            <th>Order ID</th>
-                            <th>Customer</th>
-                            <th>Total</th>
-                            <th>Status</th>
-                            <th>Date</th>
-                            <th style="text-align: center;">Actions</th>
+                            <th style="width: 50px;">Avatar</th>
+                            <th>Username</th>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Orders</th>
+                            <th>Role</th>
+                            <th>Joined</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php while ($order = mysqli_fetch_assoc($orders)): ?>
+                        <?php 
+                        $colors = ['green', 'orange', 'purple', 'red', 'pink'];
+                        $color_index = 0;
+                        while ($user = mysqli_fetch_assoc($users)): 
+                            $first_letter = strtoupper(substr($user['username'], 0, 1));
+                            $avatar_color = $colors[$color_index % count($colors)];
+                            $color_index++;
+                        ?>
                             <tr>
-                                <td><strong>#<?php echo $order['order_id']; ?></strong></td>
-                                <td><?php echo htmlspecialchars($order['username']); ?></td>
-                                <td class="order-total">RM <?php echo number_format($order['total_amount'], 2); ?></td>
                                 <td>
-                                    <form method="POST" action="" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                                        <input type="hidden" name="order_id" value="<?php echo $order['order_id']; ?>">
-                                        <select name="status" class="status-badge status-<?php echo strtolower($order['status']); ?>" 
-                                                style="padding: 4px 12px; border: none; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer;">
-                                            <option value="Pending" <?php echo $order['status'] == 'Pending' ? 'selected' : ''; ?>>Pending</option>
-                                            <option value="Processing" <?php echo $order['status'] == 'Processing' ? 'selected' : ''; ?>>Processing</option>
-                                            <option value="Shipped" <?php echo $order['status'] == 'Shipped' ? 'selected' : ''; ?>>Shipped</option>
-                                            <option value="Completed" <?php echo $order['status'] == 'Completed' ? 'selected' : ''; ?>>Completed</option>
-                                            <option value="Cancelled" <?php echo $order['status'] == 'Cancelled' ? 'selected' : ''; ?>>Cancelled</option>
-                                        </select>
-                                        <button type="submit" name="update_status" class="btn-status">Update</button>
-                                    </form>
-                                </td>
-                                <td><?php echo date('d M Y', strtotime($order['order_date'])); ?></td>
-                                <td style="text-align: center;">
-                                    <div class="actions" style="justify-content: center;">
-                                        <a href="manage_orders.php?view=<?php echo $order['order_id']; ?>" class="btn-view">👁️ View</a>
-                                        <a href="manage_orders.php?delete=<?php echo $order['order_id']; ?>" 
-                                           class="btn-delete" 
-                                           onclick="return confirm('Delete order #<?php echo $order['order_id']; ?>? This cannot be undone.')">
-                                            🗑️ Delete
-                                        </a>
+                                    <div class="user-avatar <?php echo $avatar_color; ?>">
+                                        <?php echo $first_letter; ?>
                                     </div>
                                 </td>
+                                <td><strong><?php echo htmlspecialchars($user['username']); ?></strong></td>
+                                <td><?php echo htmlspecialchars($user['full_name'] ?? 'N/A'); ?></td>
+                                <td><?php echo htmlspecialchars($user['email']); ?></td>
+                                <td style="text-align: center;"><?php echo $user['order_count'] ?? 0; ?></td>
+                                <td>
+                                    <form method="POST" action="" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                                        <input type="hidden" name="user_id" value="<?php echo $user['user_id']; ?>">
+                                        <span class="role-badge role-<?php echo strtolower($user['role'] ?? 'user'); ?>">
+                                            <?php echo ucfirst($user['role'] ?? 'User'); ?>
+                                        </span>
+                                    </form>
+                                </td>
+                                <td><?php echo date('d M Y', strtotime($user['created_at'])); ?></td>
+                                <td style="text-align: center;"></td>
                             </tr>
                         <?php endwhile; ?>
                     </tbody>
@@ -505,9 +508,9 @@ $total_orders = mysqli_num_rows($orders);
             </div>
         <?php else: ?>
             <div class="empty-state">
-                <span class="empty-icon">📦</span>
-                <h3>No Orders Yet</h3>
-                <p>Customers haven't placed any orders yet.</p>
+                <span class="empty-icon">👥</span>
+                <h3>No Users Yet</h3>
+                <p>There are no registered users yet.</p>
             </div>
         <?php endif; ?>
     </div>
@@ -517,81 +520,78 @@ $total_orders = mysqli_num_rows($orders);
     </div>
 </div>
 
-<!-- View Order Modal -->
-<?php if ($view_order): ?>
-<div class="modal-overlay" id="orderModal">
+<!-- View User Modal -->
+<?php if ($view_user): ?>
+<div class="modal-overlay" id="userModal">
     <div class="modal-content">
         <div class="modal-header">
-            <h2>Order #<?php echo $view_order['order_id']; ?> Details</h2>
-            <a href="manage_orders.php" class="close-btn">&times;</a>
+            <h2>👤 User Details</h2>
+            <a href="manage_users.php" class="close-btn">&times;</a>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+            <div class="user-avatar <?php echo $colors[0]; ?>" style="width: 60px; height: 60px; font-size: 24px;">
+                <?php echo strtoupper(substr($view_user['username'], 0, 1)); ?>
+            </div>
+            <div>
+                <h3 style="margin: 0; color: #1a1a2e;"><?php echo htmlspecialchars($view_user['full_name'] ?? $view_user['username']); ?></h3>
+                <p style="margin: 0; color: #888;">@<?php echo htmlspecialchars($view_user['username']); ?></p>
+            </div>
         </div>
 
         <div style="margin-bottom: 20px;">
-            <div class="order-detail-row">
-                <span class="label">Customer:</span>
-                <span class="value"><?php echo htmlspecialchars($view_order['full_name']); ?></span>
+            <div class="user-detail-row">
+                <span class="label">User ID:</span>
+                <span class="value">#<?php echo $view_user['user_id']; ?></span>
             </div>
-            <div class="order-detail-row">
+            <div class="user-detail-row">
                 <span class="label">Username:</span>
-                <span class="value"><?php echo htmlspecialchars($view_order['username']); ?></span>
+                <span class="value"><?php echo htmlspecialchars($view_user['username']); ?></span>
             </div>
-            <div class="order-detail-row">
+            <div class="user-detail-row">
+                <span class="label">Full Name:</span>
+                <span class="value"><?php echo htmlspecialchars($view_user['full_name'] ?? 'Not provided'); ?></span>
+            </div>
+            <div class="user-detail-row">
                 <span class="label">Email:</span>
-                <span class="value"><?php echo htmlspecialchars($view_order['email']); ?></span>
+                <span class="value"><?php echo htmlspecialchars($view_user['email']); ?></span>
             </div>
-            <div class="order-detail-row">
+            <div class="user-detail-row">
                 <span class="label">Phone:</span>
-                <span class="value"><?php echo htmlspecialchars($view_order['phone'] ?? 'Not provided'); ?></span>
+                <span class="value"><?php echo htmlspecialchars($view_user['phone'] ?? 'Not provided'); ?></span>
             </div>
-            <div class="order-detail-row">
-                <span class="label">Shipping Address:</span>
-                <span class="value"><?php echo nl2br(htmlspecialchars($view_order['shipping_address'])); ?></span>
+            <div class="user-detail-row">
+                <span class="label">Address:</span>
+                <span class="value"><?php echo nl2br(htmlspecialchars($view_user['address'] ?? 'Not provided')); ?></span>
             </div>
-            <div class="order-detail-row">
-                <span class="label">Order Date:</span>
-                <span class="value"><?php echo date('d M Y, h:i A', strtotime($view_order['order_date'])); ?></span>
-            </div>
-            <div class="order-detail-row">
-                <span class="label">Status:</span>
+            <div class="user-detail-row">
+                <span class="label">Role:</span>
                 <span class="value">
-                    <span class="status-badge status-<?php echo strtolower($view_order['status']); ?>">
-                        <?php echo $view_order['status']; ?>
+                    <span class="role-badge role-<?php echo strtolower($view_user['role'] ?? 'user'); ?>">
+                        <?php echo ucfirst($view_user['role'] ?? 'User'); ?>
                     </span>
                 </span>
             </div>
+            <div class="user-detail-row">
+                <span class="label">Joined:</span>
+                <span class="value"><?php echo date('d M Y, h:i A', strtotime($view_user['created_at'])); ?></span>
+            </div>
         </div>
 
-        <h3 style="margin-bottom: 15px;">Order Items</h3>
-        <?php if (!empty($order_items)): ?>
-            <table class="order-items-table">
-                <thead>
-                    <tr>
-                        <th>Product</th>
-                        <th style="text-align: center;">Quantity</th>
-                        <th style="text-align: right;">Price</th>
-                        <th style="text-align: right;">Subtotal</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($order_items as $item): ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($item['product_name']); ?></td>
-                            <td style="text-align: center;"><?php echo $item['quantity']; ?></td>
-                            <td style="text-align: right;">RM <?php echo number_format($item['price'], 2); ?></td>
-                            <td style="text-align: right;">RM <?php echo number_format($item['quantity'] * $item['price'], 2); ?></td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-            <div class="order-total-display">
-                Total: <span>RM <?php echo number_format($view_order['total_amount'], 2); ?></span>
+        <h3 style="margin-bottom: 15px;">Activity Summary</h3>
+        <div class="user-stats">
+            <div class="stat-item">
+                <div class="stat-number"><?php echo $view_user['order_count'] ?? 0; ?></div>
+                <div class="stat-label">Orders Placed</div>
             </div>
-        <?php else: ?>
-            <p style="color: #888;">No items found for this order.</p>
-        <?php endif; ?>
+            <div class="stat-item">
+                <div class="stat-number"><?php echo $view_user['cart_count'] ?? 0; ?></div>
+                <div class="stat-label">Items in Cart</div>
+            </div>
+        </div>
 
         <div style="margin-top: 20px; text-align: right;">
-            <a href="manage_orders.php" class="btn-back">Close</a>
+            <a href="manage_users.php" class="btn-back">Close</a>
         </div>
     </div>
 </div>

@@ -77,8 +77,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Product - Admin Panel</title>
     <link rel="stylesheet" href="../assets/css/admin_style.css">
+    <style>
+        .admin-header .nav-links {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        .admin-header .nav-links a {
+            color: #4A90D9;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+        .admin-header .nav-links a:hover {
+            background: #e8ecf1;
+        }
+        .admin-header .nav-links .btn-dashboard {
+            background: #4A90D9;
+            color: white;
+        }
+        .admin-header .nav-links .btn-dashboard:hover {
+            background: #357ABD;
+        }
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .form-actions .btn-cancel {
+            padding: 12px 35px;
+            background: #f1f3f5;
+            color: #555;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .form-actions .btn-cancel:hover {
+            background: #e8ecf1;
+        }
+        .form-actions .btn-dashboard-link {
+            padding: 12px 35px;
+            background: #4A90D9;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .form-actions .btn-dashboard-link:hover {
+            background: #357ABD;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(74, 144, 217, 0.35);
+        }
+    </style>
 </head>
 <body>
     <div class="admin-container">
@@ -86,6 +150,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="admin-header">
             <h1>📝 Edit Product</h1>
             <div class="user-info">
+                <div class="nav-links">
+                    <a href="dashboard.php" class="btn-dashboard">📊 Dashboard</a>
+                    <a href="manage_products.php">📦 Products</a>
+                </div>
                 <span class="avatar">A</span>
                 <span class="username">Admin</span>
                 <a href="logout.php" class="logout-btn">Logout</a>
@@ -144,6 +212,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="form-actions">
                     <button type="submit" class="btn-submit">Update Product</button>
                     <a href="manage_products.php" class="btn-cancel">Cancel</a>
+                    <a href="dashboard.php" class="btn-dashboard-link">📊 Back to Dashboard</a>
                 </div>
             </form>
 
