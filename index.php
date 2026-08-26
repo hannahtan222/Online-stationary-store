@@ -50,60 +50,35 @@ $product_count = mysqli_fetch_assoc($product_result)['total'];
         <div class="category-card">
             <h3>✏️ Writing</h3>
             <p>Pens, pencils and markers.</p>
-            <a href="product_module/products.php?category=1" class="btn-category">View Products</a>
+            <a href="product_module/products.php?category=1">View Products</a>
         </div>
 
         <div class="category-card">
             <h3>📓 Paper</h3>
             <p>Notebooks, journals and paper.</p>
-            <a href="product_module/products.php?category=2" class="btn-category">View Products</a>
+            <a href="product_module/products.php?category=2">View Products</a>
         </div>
 
         <div class="category-card">
             <h3>🎨 Art Supplies</h3>
             <p>Creative tools for your ideas.</p>
-            <a href="product_module/products.php?category=3" class="btn-category">View Products</a>
+            <a href="product_module/products.php?category=3">View Products</a>
+        </div>
+        
+        <div class="category-card">
+            <h3>🖥️ Office Supplies</h3>
+            <p>Support your daily working routines.</p>
+            <a href="product_module/products.php?category=4">View Products</a>
         </div>
 
         <div class="category-card">
             <h3>🖥️ Desk Accessories</h3>
             <p>Organise your workspace.</p>
-            <a href="product_module/products.php?category=5" class="btn-category">View Products</a>
+            <a href="product_module/products.php?category=5">View Products</a>
         </div>
     </div>
 </section>
 
-<!-- ======================================== -->
-<!-- PROMOTION SECTION -->
-<!-- ======================================== -->
-<section class="promotion">
-    <h2>🎉 Special Promotion</h2>
-    <p>
-        Enjoy great stationery at student-friendly prices.
-    </p>
-    <a href="product_module/products.php" class="btn btn-secondary">Explore Now</a>
-</section> 
-
-<!-- ======================================== -->
-<!-- STATS SECTION (Optional) -->
-<!-- ======================================== -->
-<!--
-<section class="stats">
-    <div class="stats-container">
-        <div class="stat-item">
-            <span class="stat-number"><?php echo $product_count; ?>+</span>
-            <span class="stat-label">Products</span>
-        </div>
-        <div class="stat-item">
-            <span class="stat-number"><?php echo $category_count; ?></span>
-            <span class="stat-label">Categories</span>
-        </div>
-        <div class="stat-item">
-            <span class="stat-number">100%</span>
-            <span class="stat-label">Satisfaction</span>
-        </div>
-    </div>
-</section> -->
 
 <?php include 'includes/footer.php'; ?>
 
