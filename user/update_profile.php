@@ -1,11 +1,11 @@
 <?php
-//update_profile.php
+// modules/member3_user/update_profile.php
 session_start();
 
-require_once('../config/db_connection.php');
-require_once('../config/auth.php');
-
-/*<link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/user_style.css">*/
+// Include BOTH config files
+require_once '../includes/config.php';        // For BASE_URL
+require_once '../config/db_connection.php';   // For database connection
+require_once '../config/auth.php';            // For authentication functions
 
 require_login();
 
@@ -32,11 +32,7 @@ mysqli_stmt_bind_param(
 
 // Execute query.
 mysqli_stmt_execute($userQuery);
-
-// Get result.
 $result = mysqli_stmt_get_result($userQuery);
-
-// Get current user information.
 $user = mysqli_fetch_assoc($result);
 
 // ==================================================
@@ -49,17 +45,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // GET UPDATED INFORMATION
     // ==============================================
 
-    $fullName = trim(
-        $_POST['full_name'] ?? ''
-    );
-
-    $address = trim(
-        $_POST['address'] ?? ''
-    );
-
-    $phone = trim(
-        $_POST['phone'] ?? ''
-    );
+    $fullName = trim($_POST['full_name'] ?? '');
+    $address = trim($_POST['address'] ?? '');
+    $phone = trim($_POST['phone'] ?? '');
 
     // ==============================================
     // UPDATE - UPDATE CURRENT USER'S PROFILE
@@ -92,88 +80,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // SUCCESS MESSAGE
     // ==============================================
 
-    flash(
-        'success',
-        'Profile updated successfully.'
-    );
+    flash('success', 'Profile updated successfully.');
 
     // Return to profile page.
-    redirect('profile.php');
+    redirect(BASE_URL . 'user/profile.php');
+    exit();
 }
-
-// ==================================================
-// PAGE HEADER
-// ==================================================
-
-include '../includes/header.php';
-
 ?>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile - Stationery Store</title>
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/user_style.css">
+</head>
+<body>
+
+<?php include '../includes/header.php'; ?>
 
 <section class="form-card">
-
-    <h1>Edit Profile</h1>
+    <h1>✏️ Edit Profile</h1>
 
     <!-- ==========================================
          UPDATE PROFILE FORM
     =========================================== -->
-
-    <form method="post">
+    <form method="POST" action="">
 
         <!-- Full Name -->
-
-        <label>
-            Full Name
-
-            <input
-                type="text"
-                name="full_name"
-                value="<?= e($user['full_name']) ?>"
-            >
-
-        </label>
+        <label for="full_name">Full Name</label>
+        <input type="text" id="full_name" name="full_name" value="<?php echo htmlspecialchars($user['full_name'] ?? ''); ?>" placeholder="Enter your full name">
 
         <!-- Address -->
-
-        <label>
-            Address
-
-            <textarea
-                name="address"
-            ><?= e($user['address']) ?></textarea>
-        </label>
+        <label for="address">Address</label>
+        <textarea id="address" name="address" placeholder="Enter your shipping address"><?php echo htmlspecialchars($user['address'] ?? ''); ?></textarea>
 
         <!-- Phone -->
+        <label for="phone">Phone</label>
+        <input type="text" id="phone" name="phone" value="<?php echo htmlspecialchars($user['phone'] ?? ''); ?>" placeholder="Enter your phone number">
 
-        <label>
-            Phone
+        <!-- Form Actions -->
+        <div class="form-actions">
+            <button type="submit" class="btn-submit">💾 Save Changes</button>
+            <a href="profile.php" class="btn-cancel">Cancel</a>
+        </div>
 
-            <input
-                type="text"
-                name="phone"
-                value="<?= e($user['phone']) ?>"
-            >
-        </label>
-
-        <!-- Submit Button -->
-
-        <button type="submit">
-            Save Changes
-        </button>
-
-
-        <!-- Cancel Button -->
-
-        <a
-            class="button secondary"
-            href="profile.php"
-        >
-            Cancel
-        </a>
+        <div class="form-footer">
+            <a href="profile.php">← Back to Profile</a>
+        </div>
     </form>
 </section>
 
-<?php
+<?php include '../includes/footer.php'; ?>
 
-include '../includes/footer.php';
-
-?>
+</body>
+</html>

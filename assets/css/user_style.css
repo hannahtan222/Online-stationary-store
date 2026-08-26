@@ -13,6 +13,8 @@
     --secondary: #D8C3A5;
     --accent: #E8A87C;
     --text: #2F2F2F;
+    --white: #ffffff;
+    --shadow: rgba(0, 0, 0, 0.06);
 }
 
 
@@ -22,13 +24,26 @@
 
 * {
     box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
 body {
     margin: 0;
     background: var(--bg);
     color: var(--text);
-    font-family: Arial, sans-serif;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    line-height: 1.6;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
 }
 
 
@@ -42,49 +57,96 @@ body {
 
 
 /* =========================================================
-   3. NAVIGATION BAR
+   3. MODERN HEADER & NAVIGATION
    ========================================================= */
+
+.site-header {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
 
 .nav {
     display: flex;
     min-height: 68px;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap;
 }
 
-
-/* PaperNest logo */
-
+/* Brand / Logo */
 .brand {
     color: var(--primary);
     font-size: 1.5rem;
-    font-weight: bold;
+    font-weight: 800;
     text-decoration: none;
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
+.brand:hover {
+    color: var(--accent);
+}
 
 /* Navigation links */
-
-nav {
+.nav-menu {
     display: flex;
-    gap: 10px;
+    gap: 8px;
+    align-items: center;
+    list-style: none;
 }
 
-nav a {
+.nav-menu li a {
     color: var(--text);
     text-decoration: none;
-    padding: 8px;
+    padding: 8px 18px;
+    border-radius: 50px;
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.3s ease;
 }
-
 
 /* Hover and active navigation links */
-
-nav a.active,
-nav a:hover {
+.nav-menu li a.active,
+.nav-menu li a:hover {
     background: var(--secondary);
-    border-radius: 5px;
+    border-radius: 50px;
+    color: var(--primary);
 }
 
+.nav-menu li a.admin-link {
+    background: var(--primary);
+    color: white;
+    padding: 10px 24px;
+    border-radius: 50px;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(91, 70, 54, 0.25);
+}
+
+.nav-menu li a.admin-link:hover {
+    background: #4a382a;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(91, 70, 54, 0.35);
+}
+
+/* Mobile Menu Button */
+.menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    padding: 5px 10px;
+    color: var(--primary);
+}
 
 /* =========================================================
    4. MAIN PAGE CONTAINER
@@ -103,16 +165,17 @@ nav a:hover {
 .card,
 .form-card {
     background: white;
-    border-radius: 10px;
-    padding: 25px;
-
-    /* Soft shadow around cards */
-    box-shadow: 0 3px 12px #0001;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 4px 20px var(--shadow);
+    transition: all 0.3s ease;
 }
 
+.card:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+}
 
 /* Form card has a maximum width */
-
 .form-card {
     max-width: 600px;
     margin: auto;
@@ -125,24 +188,37 @@ nav a:hover {
 
 label {
     display: block;
-    margin: 12px 0;
-    font-weight: bold;
+    margin: 12px 0 6px;
+    font-weight: 600;
+    color: var(--text);
 }
 
-
 /* Text input, textarea and dropdown */
-
 input,
 textarea,
 select {
     width: 100%;
-    padding: 10px;
-    margin-top: 4px;
-
-    border: 1px solid #bbb;
-    border-radius: 5px;
-
+    padding: 12px 15px;
+    border: 2px solid #e8ecf1;
+    border-radius: 8px;
     font: inherit;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    background: #fafbfc;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: var(--accent);
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(232, 168, 124, 0.15);
+    background: white;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 120px;
 }
 
 
@@ -154,14 +230,45 @@ button,
 .button {
     background: var(--primary);
     color: white;
-
     border: 0;
-    border-radius: 5px;
-
-    padding: 10px 15px;
-
+    border-radius: 8px;
+    padding: 12px 28px;
+    font-size: 15px;
+    font-weight: 600;
     text-decoration: none;
     cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+button:hover,
+.button:hover {
+    background: #4a382a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(91, 70, 54, 0.3);
+}
+
+button:active,
+.button:active {
+    transform: translateY(0);
+}
+
+.btn-secondary {
+    background: var(--secondary);
+    color: var(--text);
+}
+
+.btn-secondary:hover {
+    background: #c8b396;
+}
+
+.btn-accent {
+    background: var(--accent);
+    color: white;
+}
+
+.btn-accent:hover {
+    background: #d4956a;
 }
 
 
@@ -171,160 +278,504 @@ button,
 
 .grid {
     display: grid;
-
-    /* Four cards per row on desktop */
     grid-template-columns: repeat(4, 1fr);
-
-    gap: 16px;
+    gap: 20px;
 }
 
 
 /* =========================================================
-   9. SUCCESS AND ERROR MESSAGES
+   9. CATEGORIES SECTION
+   ========================================================= */
+
+.categories {
+    padding: 60px 0;
+    text-align: center;
+}
+
+.categories h2 {
+    font-size: 36px;
+    color: var(--primary);
+    margin-bottom: 40px;
+    font-weight: 700;
+}
+
+.categories h2::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 4px;
+    background: var(--accent);
+    margin: 12px auto 0;
+    border-radius: 4px;
+}
+
+.category-container {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 20px;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.category-card {
+    background: white;
+    padding: 25px 15px;
+    border: 1px solid #e8ecf1;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    border-color: var(--accent);
+}
+
+.category-card h3 {
+    font-size: 18px;
+    color: var(--primary);
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+.category-card p {
+    color: #777;
+    margin-bottom: 12px;
+    font-size: 13px;
+}
+
+.category-card a {
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 13px;
+    transition: all 0.3s ease;
+}
+
+.category-card a:hover {
+    color: var(--primary);
+    text-decoration: underline;
+}
+
+
+/* =========================================================
+   10. SUCCESS AND ERROR MESSAGES
    ========================================================= */
 
 .message {
-    padding: 12px;
+    padding: 12px 18px;
     margin-bottom: 15px;
+    border-radius: 8px;
 }
-
 
 /* Error message */
-
 .error {
     background: #f8dede;
+    color: #991b1b;
+    border: 1px solid #fecaca;
 }
 
-
 /* Success message */
-
 .success {
     background: #daf0df;
+    color: #065f46;
+    border: 1px solid #bbf7d0;
+}
+
+.flash-message {
+    padding: 12px 18px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.flash-success {
+    background: #daf0df;
+    color: #065f46;
+    border: 1px solid #bbf7d0;
+}
+
+.flash-error {
+    background: #f8dede;
+    color: #991b1b;
+    border: 1px solid #fecaca;
 }
 
 
 /* =========================================================
-   10. TABLES
+   11. TABLES
    ========================================================= */
-
-/* Allows tables to scroll horizontally on small screens */
 
 .table {
     overflow-x: auto;
 }
 
-
-/* Main table */
-
 table {
     width: 100%;
     min-width: 620px;
-
     border-collapse: collapse;
 }
 
-
-/* Table headings and cells */
-
 th,
 td {
-    padding: 10px;
-    border-bottom: 1px solid #ddd;
-
+    padding: 12px 15px;
+    border-bottom: 1px solid #e8ecf1;
     text-align: left;
 }
 
+th {
+    background: #f8f6f1;
+    font-weight: 600;
+    color: var(--primary);
+}
+
+tr:hover {
+    background: #faf8f4;
+}
+
 
 /* =========================================================
-   11. FOOTER
+   12. FOOTER
    ========================================================= */
 
-footer {
+.site-footer {
     background: var(--primary);
     color: white;
+    padding: 40px 0 25px;
+    margin-top: 40px;
+}
 
+.footer-content {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 40px;
+    max-width: 1100px;
+    margin: 0 auto;
+    width: 92%;
+}
+
+.footer-section h3,
+.footer-section h4 {
+    color: white;
+    margin-bottom: 18px;
+    font-weight: 700;
+}
+
+.footer-section h3 {
+    font-size: 22px;
+}
+
+.footer-section h3 span {
+    color: var(--accent);
+}
+
+.footer-section p {
+    font-size: 14px;
+    line-height: 1.8;
+    color: #d8c8b8;
+    margin-bottom: 12px;
+}
+
+.footer-section ul {
+    list-style: none;
+}
+
+.footer-section ul li {
+    margin-bottom: 10px;
+}
+
+.footer-section ul li a {
+    color: #d8c8b8;
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.footer-section ul li a:hover {
+    color: white;
+    padding-left: 4px;
+}
+
+.footer-section .contact-info li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #d8c8b8;
+    font-size: 14px;
+}
+
+.footer-bottom {
     text-align: center;
-
-    padding: 25px;
+    margin-top: 35px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 14px;
+    color: #b0a090;
+    max-width: 1100px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 92%;
 }
 
-
-/* =========================================================
-   12. MOBILE MENU BUTTON
-   ========================================================= */
-
-/* Hidden on desktop */
-
-.menu-button {
-    display: none;
+.footer-bottom a {
+    color: var(--accent);
 }
 
+.footer-bottom a:hover {
+    text-decoration: underline;
+}
 
 /* =========================================================
-   13. TABLET RESPONSIVE DESIGN
-   Screen width: 800px or below
+   PROFILE & UPDATE PROFILE STYLES
    ========================================================= */
 
-@media (max-width: 800px) {
+/* Profile Page */
+.profile-container {
+    max-width: 700px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
 
-    /* Change 4-column grid into 2-column grid */
+.profile-card {
+    background: white;
+    border-radius: 12px;
+    padding: 35px 40px 40px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+}
 
-    .grid {
-        grid-template-columns: repeat(2, 1fr);
+.profile-card h1 {
+    text-align: center;
+    font-size: 28px;
+    color: #1a1a2e;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f0f2f5;
+}
+
+.profile-details {
+    margin-bottom: 25px;
+}
+
+.profile-details .detail-row {
+    display: flex;
+    padding: 12px 0;
+    border-bottom: 1px solid #f8fafc;
+}
+
+.profile-details .detail-label {
+    font-weight: 600;
+    width: 120px;
+    color: #555;
+    flex-shrink: 0;
+}
+
+.profile-details .detail-value {
+    color: #1a1a2e;
+    word-break: break-word;
+}
+
+.profile-details .detail-value.address {
+    white-space: pre-line;
+}
+
+.profile-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+.profile-actions .btn-secondary {
+    flex: 1;
+    display: inline-block;
+    background: #e8ecf1;
+    color: #333;
+    padding: 12px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    text-align: center;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.profile-actions .btn-secondary:hover {
+    background: #d1d5db;
+}
+
+.profile-actions .btn-danger {
+    flex: 1;
+    display: inline-block;
+    background: #fee2e2;
+    color: #dc2626;
+    padding: 12px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.profile-actions .btn-danger:hover {
+    background: #fecaca;
+}
+
+/* Update Profile Form */
+.form-card {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 35px 40px 40px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+}
+
+.form-card h1 {
+    text-align: center;
+    font-size: 28px;
+    color: #1a1a2e;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f0f2f5;
+}
+
+.form-card label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #444;
+    font-size: 14px;
+}
+
+.form-card input,
+.form-card textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e8ecf1;
+    border-radius: 8px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    background: #fafbfc;
+    margin-bottom: 18px;
+}
+
+.form-card input:focus,
+.form-card textarea:focus {
+    border-color: #4A90D9;
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(74, 144, 217, 0.12);
+    background: white;
+}
+
+.form-card textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.form-card .form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 5px;
+    flex-wrap: wrap;
+}
+
+.form-card .btn-submit {
+    flex: 1;
+    padding: 14px 30px;
+    background: #4A90D9;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 120px;
+}
+
+.form-card .btn-submit:hover {
+    background: #357ABD;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(74, 144, 217, 0.35);
+}
+
+.form-card .btn-cancel {
+    flex: 1;
+    padding: 14px 30px;
+    background: #f1f3f5;
+    color: #555;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+    text-align: center;
+    transition: all 0.3s ease;
+    min-width: 120px;
+}
+
+.form-card .btn-cancel:hover {
+    background: #e8ecf1;
+}
+
+.form-card .form-footer {
+    text-align: center;
+    margin-top: 20px;
+    color: #888;
+    font-size: 14px;
+}
+
+.form-card .form-footer a {
+    color: #4A90D9;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.form-card .form-footer a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive Profile & Form */
+@media (max-width: 600px) {
+    .profile-card {
+        padding: 25px 20px;
+        margin: 20px 15px;
     }
-
-    /* Show mobile menu button */
-
-    .menu-button {
-        display: block;
+    
+    .profile-details .detail-row {
+        flex-direction: column;
+        padding: 10px 0;
     }
-
-    /* Hide navigation menu initially */
-
-    .nav {
-        position: relative;
+    
+    .profile-details .detail-label {
+        width: 100%;
+        margin-bottom: 3px;
     }
-
-    .nav nav {
-        display: none;
-
-        position: absolute;
-
-        top: 68px;
-        left: 0;
-        right: 0;
-
-        background: white;
-
-        padding: 12px;
-
+    
+    .profile-actions {
         flex-direction: column;
     }
-
-    /* Show menu when JavaScript adds "open" class */
-
-    .nav nav.open {
-        display: flex;
+    
+    .profile-actions .btn-secondary,
+    .profile-actions .btn-danger {
+        flex: none;
+        width: 100%;
     }
-}
-
-
-/* =========================================================
-   14. MOBILE RESPONSIVE DESIGN
-   Screen width: 500px or below
-   ========================================================= */
-
-@media (max-width: 500px) {
-
-    /* One card per row */
-
-    .grid {
-        grid-template-columns: 1fr;
+    
+    .form-card {
+        padding: 25px 20px;
+        margin: 20px 15px;
     }
-
-    /* Reduce page spacing */
-
-    .container {
-        padding: 20px 0;
+    
+    .form-card .form-actions {
+        flex-direction: column;
+    }
+    
+    .form-card .btn-submit,
+    .form-card .btn-cancel {
+        flex: none;
+        width: 100%;
     }
 }
