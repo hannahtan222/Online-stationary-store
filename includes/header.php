@@ -17,7 +17,6 @@ require_once 'config.php';
     <div class="logo">
         <a href="<?php echo BASE_URL; ?>index.php">📚 Best Stationery</a>
     </div>
-    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
     
     <?php include 'navigation.php'; ?>
     

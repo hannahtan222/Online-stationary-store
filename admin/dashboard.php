@@ -42,164 +42,6 @@ $low_stock = mysqli_query($conn, $low_stock_query);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Admin Panel</title>
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/admin_style.css">
-    <style>
-        /* Extra dashboard styles */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 25px;
-            margin-top: 30px;
-        }
-        
-        .dashboard-card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        }
-        
-        .dashboard-card h3 {
-            color: #1a1a2e;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #f0f2f5;
-        }
-        
-        .dashboard-card ul {
-            list-style: none;
-            padding: 0;
-        }
-        
-        .dashboard-card ul li {
-            padding: 10px 0;
-            border-bottom: 1px solid #f8fafc;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .dashboard-card ul li:last-child {
-            border-bottom: none;
-        }
-        
-        .status-badge {
-            padding: 3px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        
-        .status-badge.pending { background: #fef3c7; color: #d97706; }
-        .status-badge.completed { background: #d1fae5; color: #065f46; }
-        .status-badge.shipped { background: #dbeafe; color: #1e40af; }
-        .status-badge.cancelled { background: #fee2e2; color: #991b1b; }
-		
-		 .message-status {
-            padding: 3px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 600;
-        }
-        .message-status.unread { background: #fee2e2; color: #991b1b; }
-        .message-status.read { background: #dbeafe; color: #1e40af; }
-        .message-status.replied { background: #d1fae5; color: #065f46; }
-        
-        .low-stock-warning {
-            color: #dc2626;
-            font-weight: 600;
-        }
-        
-        .dashboard-admin-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        
-        .dashboard-admin-header h1 {
-            font-size: 28px;
-            color: #1a1a2e;
-        }
-        
-        .dashboard-admin-header .admin-info {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-        
-        .dashboard-admin-header .admin-info span {
-            color: #666;
-        }
-        
-        .dashboard-admin-header .admin-info strong {
-            color: #1a1a2e;
-        }
-        
-        .btn-logout {
-            background: #fee2e2;
-            color: #dc2626;
-            padding: 8px 20px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-logout:hover {
-            background: #fecaca;
-        }
-		
-		.message-preview {
-            max-width: 150px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            color: #666;
-            font-size: 13px;
-        }
-        
-        .message-sender {
-            font-weight: 500;
-            color: #1a1a2e;
-        }
-        
-        .stat-box.contact-stat {
-            border-left-color: #8B5CF6;
-        }
-		
-		.stat-box.contact-stat .stat-icon {
-            color: #8B5CF6;
-        }
-        .stat-box.contact-stat .stat-link {
-            color: #8B5CF6;
-        }
-        .stat-box.contact-stat .stat-link:hover {
-            color: #7C3AED;
-        }
-		
-		 .unread-badge {
-            background: #dc2626;
-            color: white;
-            border-radius: 50%;
-            padding: 2px 8px;
-            font-size: 12px;
-            font-weight: 700;
-            margin-left: 5px;
-        }
-        
-        @media (max-width: 768px) {
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .dashboard-admin-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-        }
-    </style>
 </head>
 <body>
 
@@ -259,36 +101,47 @@ $low_stock = mysqli_query($conn, $low_stock_query);
     </div>
     
     <!-- Recent Orders & Low Stock -->
-    <div class="dashboard-grid">
-        <!-- Recent Orders -->
-        <div class="dashboard-card">
-            <h3>🕐 Recent Orders</h3>
-            <?php if (mysqli_num_rows($recent_orders) > 0): ?>
-                <ul>
-                    <?php while ($order = mysqli_fetch_assoc($recent_orders)): ?>
-                        <li>
-                            <span>
-                                <strong>#<?php echo $order['order_id']; ?></strong>
-                                - <?php echo htmlspecialchars($order['username']); ?>
+<div class="dashboard-grid">
+    <!-- Recent Orders -->
+    <div class="dashboard-card">
+        <h3>🕐 Recent Orders</h3>
+        <?php 
+        // Fetch only orders that are NOT completed
+       $recent_orders_query = "SELECT o.order_id, o.user_id, o.status, o.total_amount, u.username 
+                                FROM orders o 
+                                INNER JOIN users u ON o.user_id = u.user_id 
+                                WHERE o.status != 'Completed' 
+                                ORDER BY o.order_id DESC 
+                                LIMIT 5";
+        $recent_orders = mysqli_query($conn, $recent_orders_query);
+        
+        if (mysqli_num_rows($recent_orders) > 0): 
+        ?>
+            <ul>
+                <?php while ($order = mysqli_fetch_assoc($recent_orders)): ?>
+                    <li>
+                        <span>
+                            <strong>#<?php echo $order['order_id']; ?></strong>
+                            - <?php echo htmlspecialchars($order['username']); ?>
+                        </span>
+                        <span>
+                            <span class="status-badge <?php echo strtolower($order['status']); ?>">
+                                <?php echo $order['status']; ?>
                             </span>
-                            <span>
-                                <span class="status-badge <?php echo strtolower($order['status']); ?>">
-                                    <?php echo $order['status']; ?>
-                                </span>
-                                <span style="color: #888; font-size: 13px; margin-left: 10px;">
-                                    RM <?php echo number_format($order['total_amount'], 2); ?>
-                                </span>
+                            <span style="color: #888; font-size: 13px; margin-left: 10px;">
+                                RM <?php echo number_format($order['total_amount'], 2); ?>
                             </span>
-                        </li>
-                    <?php endwhile; ?>
-                </ul>
-                <div style="margin-top: 15px; text-align: right;">
-                    <a href="manage_orders.php" style="color: #4A90D9; text-decoration: none; font-weight: 500;">View All Orders →</a>
-                </div>
-            <?php else: ?>
-                <p style="color: #888; text-align: center; padding: 20px;">No orders yet.</p>
-            <?php endif; ?>
-        </div>
+                        </span>
+                    </li>
+                <?php endwhile; ?>
+            </ul>
+            <div style="margin-top: 15px; text-align: right;">
+                <a href="manage_orders.php" style="color: #506294; text-decoration: none; font-weight: 500;">View All Orders →</a>
+            </div>
+        <?php else: ?>
+            <p style="color: #888; text-align: center; padding: 20px;">No pending orders.</p>
+        <?php endif; ?>
+    </div>
         
         <!-- Low Stock Alert -->
         <div class="dashboard-card">

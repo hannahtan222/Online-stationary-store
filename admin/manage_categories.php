@@ -205,8 +205,8 @@ if (isset($_SESSION['edit_category_id']) && isset($_SESSION['edit_category_name'
         </div>
 
         <div style="margin-top: 20px;">
-            <a href="dashboard.php" style="color: #4A90D9; text-decoration: none;">← Back to Dashboard</a>
-        </div>
+			<a href="dashboard.php" class="btn-back">← Back to Dashboard</a>
+		</div>
     </div>
 </body>
 </html>

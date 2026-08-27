@@ -211,8 +211,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <div class="form-actions">
                     <button type="submit" class="btn-submit">Update Product</button>
-                    <a href="manage_products.php" class="btn-cancel">Cancel</a>
-                    <a href="dashboard.php" class="btn-dashboard-link">📊 Back to Dashboard</a>
+                    <a href="manage_product.php" class="btn-cancel">Cancel</a>
                 </div>
             </form>
 
@@ -226,6 +225,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <?php endif; ?>
             </div>
         </div>
+		<div style="margin-top: 20px;">
+        <a href="dashboard.php" class="btn-back">← Back to Dashboard</a>
+		</div>
     </div>
 </body>
 </html>
