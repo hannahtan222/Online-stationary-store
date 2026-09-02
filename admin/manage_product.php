@@ -129,7 +129,7 @@ $product_count = mysqli_num_rows($products);
                                 <td style="text-align: center;">
                                     <div class="actions" style="justify-content: center;">
                                         <a href="edit_product.php?id=<?php echo $product['product_id']; ?>" class="btn-edit">✏️ Edit</a>
-                                        <a href="manage_products.php?delete=<?php echo $product['product_id']; ?>" 
+                                        <a href="manage_product.php?delete=<?php echo $product['product_id']; ?>" 
                                            class="btn-delete" 
                                            onclick="return confirm('Are you sure you want to delete \'<?php echo htmlspecialchars($product['product_name']); ?>\'? This cannot be undone.')">
                                             🗑️ Delete
