@@ -1,6 +1,6 @@
 **Best Stationary -- Online Stationary Store**
 
-This is a group assignment project for UECS2094 / UECS2194 / EECS2194 Web Application Development at Universiti Tunku Abdul Rahman (UTAR). This project is a web-based e-commerce application that allows customers to browse, search, and purchase stationery products online, built using PHP, HTML, CSS, JavaScript, and MySQL.
+This is a group assignment project for Web Application Development at Universiti Tunku Abdul Rahman (UTAR). This project is a web-based e-commerce application that allows customers to browse, search, and purchase stationery products online, built using PHP, HTML, CSS, JavaScript, and MySQL.
 
 **User Features**
 
