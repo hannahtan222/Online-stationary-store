@@ -126,6 +126,7 @@ img {
     border-color: rgba(255, 255, 255, 0.2);
     transform: translateY(-1px);
 }
+
 /* ========================================
    MAIN CONTENT
    ======================================== */
@@ -415,6 +416,7 @@ img {
 .category-card a:hover::after {
     transform: translateX(4px);
 }
+
 /* ========================================
    MODERN FOOTER - Navy Theme
    ======================================== */
@@ -691,4 +693,403 @@ img {
 .contact-form button:hover {
     transform: translateY(-3px);
     box-shadow: 0 8px 25px rgba(74, 144, 217, 0.4);
+}
+
+/* ========================================
+   RESPONSIVE DESIGN - Media Queries
+   ======================================== */
+
+/* ---------- Large Screens (1200px and above) ---------- */
+@media (max-width: 1200px) {
+    .category-container {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+    }
+}
+
+/* ---------- Tablets & Small Laptops (992px and below) ---------- */
+@media (max-width: 992px) {
+    /* Header */
+    .site-header {
+        padding: 14px 5%;
+    }
+    
+    .logo a {
+        font-size: 24px;
+    }
+    
+    .logo a .logo-icon {
+        font-size: 28px;
+    }
+    
+    .nav-menu li a {
+        padding: 6px 14px;
+        font-size: 13px;
+    }
+    
+    .nav-menu li a.admin-link {
+        padding: 8px 18px;
+        font-size: 13px;
+    }
+    
+    /* Hero */
+    .hero {
+        min-height: 450px;
+        padding: 80px 6%;
+    }
+    
+    .hero h1 {
+        font-size: 42px;
+    }
+    
+    .hero p {
+        font-size: 18px;
+    }
+    
+    /* Categories */
+    .categories {
+        padding: 50px 5% 60px;
+    }
+    
+    .categories h2 {
+        font-size: 32px;
+    }
+    
+    .category-container {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+    }
+    
+    /* Footer */
+    .footer-content {
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 30px;
+    }
+    
+    /* Contact */
+    .contact-container {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+}
+
+/* ---------- Mobile Landscape & Small Tablets (768px and below) ---------- */
+@media (max-width: 768px) {
+    /* Header */
+    .site-header {
+        padding: 12px 4%;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+    
+    .logo a {
+        font-size: 22px;
+        justify-content: center;
+    }
+    
+    .nav-menu {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+    
+    .nav-menu li a {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+    
+    .nav-menu li a.admin-link {
+        padding: 6px 16px;
+        font-size: 12px;
+    }
+    
+    /* Hero */
+    .hero {
+        min-height: 380px;
+        padding: 60px 5%;
+        text-align: center;
+    }
+    
+    .hero h1 {
+        font-size: 34px;
+    }
+    
+    .hero p {
+        font-size: 16px;
+        margin-bottom: 24px;
+    }
+    
+    .hero .btn-primary,
+    .hero .btn-secondary {
+        padding: 12px 28px;
+        font-size: 14px;
+    }
+    
+    /* Categories */
+    .categories {
+        padding: 40px 4% 50px;
+    }
+    
+    .categories h2 {
+        font-size: 28px;
+    }
+    
+    .categories .subtitle {
+        font-size: 14px;
+    }
+    
+    .category-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px;
+    }
+    
+    .category-card {
+        padding: 20px 12px 16px;
+    }
+    
+    .category-card h3 {
+        font-size: 16px;
+    }
+    
+    .category-card .icon-wrapper {
+        width: 50px;
+        height: 50px;
+        font-size: 24px;
+    }
+    
+    /* Footer */
+    .site-footer {
+        padding: 40px 4% 20px;
+    }
+    
+    .footer-content {
+        grid-template-columns: 1fr 1fr;
+        gap: 25px;
+    }
+    
+    .footer-section h3 {
+        font-size: 20px;
+    }
+    
+    .footer-section h4 {
+        font-size: 16px;
+    }
+    
+    /* Contact */
+    .contact-page {
+        padding: 40px 4%;
+    }
+    
+    .contact-page > h1 {
+        font-size: 30px;
+    }
+    
+    .contact-info,
+    .contact-form {
+        padding: 25px;
+    }
+    
+    .contact-form button {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* ---------- Mobile Portrait (480px and below) ---------- */
+@media (max-width: 480px) {
+    /* Header */
+    .site-header {
+        padding: 10px 3%;
+    }
+    
+    .logo a {
+        font-size: 18px;
+    }
+    
+    .logo a .logo-icon {
+        font-size: 22px;
+    }
+    
+    .nav-menu {
+        gap: 3px;
+    }
+    
+    .nav-menu li a {
+        padding: 4px 10px;
+        font-size: 11px;
+    }
+    
+    .nav-menu li a.admin-link {
+        padding: 4px 12px;
+        font-size: 11px;
+    }
+    
+    /* Hero */
+    .hero {
+        min-height: 320px;
+        padding: 50px 4%;
+    }
+    
+    .hero h1 {
+        font-size: 28px;
+    }
+    
+    .hero p {
+        font-size: 14px;
+        margin-bottom: 20px;
+    }
+    
+    .hero .btn-primary,
+    .hero .btn-secondary {
+        padding: 10px 22px;
+        font-size: 13px;
+        display: block;
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    
+    /* Categories */
+    .categories {
+        padding: 30px 3% 40px;
+    }
+    
+    .categories h2 {
+        font-size: 24px;
+    }
+    
+    .categories .subtitle {
+        font-size: 13px;
+    }
+    
+    .category-container {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+    
+    .category-card {
+        padding: 16px 10px 14px;
+    }
+    
+    .category-card h3 {
+        font-size: 14px;
+    }
+    
+    .category-card p {
+        font-size: 12px;
+    }
+    
+    .category-card .icon-wrapper {
+        width: 44px;
+        height: 44px;
+        font-size: 20px;
+        margin-bottom: 10px;
+    }
+    
+    .category-card a {
+        font-size: 12px;
+    }
+    
+    /* Footer */
+    .site-footer {
+        padding: 30px 3% 15px;
+    }
+    
+    .footer-content {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        text-align: center;
+    }
+    
+    .footer-section h3 {
+        font-size: 18px;
+    }
+    
+    .footer-section .social-links {
+        justify-content: center;
+    }
+    
+    .footer-section ul li a::before {
+        content: '';
+    }
+    
+    .footer-section .contact-info li {
+        justify-content: center;
+    }
+    
+    .footer-bottom {
+        font-size: 12px;
+        margin-top: 25px;
+        padding-top: 15px;
+    }
+    
+    /* Contact */
+    .contact-page {
+        padding: 30px 3%;
+    }
+    
+    .contact-page > h1 {
+        font-size: 26px;
+    }
+    
+    .contact-page > p {
+        font-size: 15px;
+        margin-bottom: 30px;
+    }
+    
+    .contact-info,
+    .contact-form {
+        padding: 20px 15px;
+    }
+    
+    .contact-info h2,
+    .contact-form h2 {
+        font-size: 19px;
+    }
+    
+    .contact-form input,
+    .contact-form textarea {
+        padding: 10px 14px;
+        font-size: 14px;
+    }
+    
+    .contact-form button {
+        padding: 12px 20px;
+        font-size: 14px;
+        width: 100%;
+    }
+}
+
+/* ---------- Extra Small Phones (360px and below) ---------- */
+@media (max-width: 360px) {
+    .logo a {
+        font-size: 16px;
+    }
+    
+    .logo a .logo-icon {
+        font-size: 18px;
+    }
+    
+    .nav-menu li a {
+        padding: 3px 8px;
+        font-size: 10px;
+    }
+    
+    .hero h1 {
+        font-size: 24px;
+    }
+    
+    .hero p {
+        font-size: 13px;
+    }
+    
+    .category-container {
+        grid-template-columns: 1fr;
+        max-width: 250px;
+        margin: 0 auto;
+    }
+    
+    .categories h2 {
+        font-size: 20px;
+    }
 }
