@@ -29,33 +29,32 @@ View customer contact messages.
 
 -Database: MySQL
 
--Local Server:	XAMPP (Apache + MySQL)
+-Local Server:	Wampserver
 
 ## Getting Started
 
-1. Requirements
-XAMPP (provides Apache and MySQL), or any server that supports PHP and MySQL.
+### 1. Requirements
+WampServer (which provides Apache, MySQL, and PHP).
 
 A modern web browser (Google Chrome, Microsoft Edge, Firefox, or Safari).
 
-2. Clone this repository
+### 2. Clone this repository
 
 git clone https://github.com/hannahtan222/Online-stationary-store.git
-Extract/place the project folder into the XAMPP htdocs directory, for example:
-C:\xampp\htdocs\Online-stationary-store
+Extract/place the project folder into the WAMPSERVER htdocs directory.
 
-3. Start Apache and MySQL
+### 3. Start WampServer
 
-Open the XAMPP Control Panel and start both Apache and MySQL.
+Launch WampServer and ensure the icon in the system tray turns green (indicating Apache and MySQL are running).
 
-4. Set up the database
+### 4. Set up the database
 
 Open http://localhost/phpmyadmin.
 Create a new database named stationery_store.
 Select the database and use the Import function to import the project's SQL file (database_stationery_store.sql).
 The script automatically creates the required tables (categories, products, users, cart, orders, order_items, contact_messages) and pre-populates sample category and product data.
 
-5. Configure the database connection
+### 5. Configure the database connection
 
 Update config/db_connection.php with your local MySQL settings:
 php
@@ -64,85 +63,32 @@ $username = "root";
 $password = "";
 $dbname = "stationery_store";
 
-6. Configure the base URL
+### 6. Configure the base URL
 
 Update BASE_URL in includes/config.php to match your project folder, for example:
 php
 define('BASE_URL', 'http://localhost/Online-stationary-store/');
 
-7. Run the application
+### 7. Run the application
 
 Open a browser and go to the configured URL, e.g.: http://localhost/Online-stationary-store/
 
-**Admin Access**
-Default admin login credentials:
-Username: admin
-Password: admin123
-Admin login page: admin/admin_login.php
+---
 
-**Verification Checklist**
-After installation, confirm the following work correctly:
--Website loads without errors and navigation menu displays correctly
--Category pages show products, product details pages display properly
--User registration and login work
--Profile page shows user information
--Shopping cart accepts items and checkout completes successfully
--Contact form submits messages
--Admin panel is accessible with the default credentials above
+## Admin Access
+1. Default admin login credentials:
+2. Username: admin
+3. Password: admin123
+4. Admin login page: admin/admin_login.php
 
 ---
 
-## Project Structure
-Online-Stationary-Store/
-│
-├── admin/
-│   ├── add_product.php
-│   ├── admin_login.php
-│   ├── dashboard.php
-│   ├── edit_product.php
-│   ├── logout.php
-│   ├── manage_categories.php
-│   ├── manage_messages.php
-│   ├── manage_orders.php
-│   ├── manage_product.php
-│   └── manage_users.php
-│
-├── assets/
-│   ├── css/
-│   └── js/
-│
-├── config/
-│   ├── auth.php
-│   └── db_connection.php
-│
-├── front-end/
-│   ├── cart.php
-│   ├── contact.php
-│   └── index.php
-│
-├── includes/
-│   ├── config.php
-│   ├── footer.php
-│   ├── header.php
-│   └── navigation.php
-│
-├── product_module/
-│   ├── product_details.php
-│   └── products.php
-│
-├── user/
-│   ├── add_to_cart.php
-│   ├── cart.php
-│   ├── categories.php
-│   ├── checkout.php
-│   ├── login.php
-│   ├── logout.php
-│   ├── order_history.php
-│   ├── profile.php
-│   ├── register.php
-│   ├── remove_cart.php
-│   ├── update_cart.php
-│   └── update_profile.php
-│
-├── database_stationery_store.sql
-└── index.php
+## Verification Checklist
+After installation, confirm the following work correctly:
+1. Website loads without errors and navigation menu displays correctly
+2.Category pages show products, product details pages display properly
+3. User registration and login work
+4. Profile page shows user information
+5. Shopping cart accepts items and checkout completes successfully
+6. Contact form submits messages
+7. Admin panel is accessible with the default credentials above
