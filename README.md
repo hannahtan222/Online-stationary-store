@@ -1,8 +1,8 @@
-**Best Stationary -- Online Stationary Store**
+# Best Stationary -- Online Stationary Store
 
 This is a group assignment project for Web Application Development at Universiti Tunku Abdul Rahman (UTAR). This project is a web-based e-commerce application that allows customers to browse, search, and purchase stationery products online, built using PHP, HTML, CSS, JavaScript, and MySQL.
 
-**User Features**
+## User Features
 
 User registration and login (with secure password hashing using password_hash() and password_verify()).
 Product browsing with category filtering and keyword search.
@@ -13,7 +13,7 @@ Order history.
 Profile management.
 Contact form for customer enquiries.
 
-**Admin Features**
+## Admin Features
 
 Admin dashboard with an overview of products, categories, orders, messages, and users.
 Product management (Create, Read, Update, Delete).
@@ -22,7 +22,7 @@ User management.
 Order management.
 View customer contact messages.
 
-**Tech Stack**
+## Tech Stack
 -Frontend:	HTML, CSS, JavaScript
 
 -Backend: PHP
@@ -31,7 +31,7 @@ View customer contact messages.
 
 -Local Server:	XAMPP (Apache + MySQL)
 
-**Getting Started**
+## Getting Started
 
 1. Requirements
 XAMPP (provides Apache and MySQL), or any server that supports PHP and MySQL.
@@ -90,7 +90,9 @@ After installation, confirm the following work correctly:
 -Contact form submits messages
 -Admin panel is accessible with the default credentials above
 
-**Project Structure**
+---
+
+## Project Structure
 Online-Stationary-Store/
 │
 ├── admin/
@@ -133,7 +135,6 @@ Online-Stationary-Store/
 │   ├── cart.php
 │   ├── categories.php
 │   ├── checkout.php
-│   ├── db_connect.php
 │   ├── login.php
 │   ├── logout.php
 │   ├── order_history.php
@@ -144,5 +145,4 @@ Online-Stationary-Store/
 │   └── update_profile.php
 │
 ├── database_stationery_store.sql
-├── index.php
-└── README.md
+└── index.php
