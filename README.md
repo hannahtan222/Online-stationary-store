@@ -92,3 +92,7 @@ After installation, confirm the following work correctly:
 5. Shopping cart accepts items and checkout completes successfully
 6. Contact form submits messages
 7. Admin panel is accessible with the default credentials above
+
+---
+
+### Demo video ：https://drive.google.com/file/d/11BZ6R6cGBgsnW0JI-IJfiTtLZscbKjLa/view?usp=sharing
